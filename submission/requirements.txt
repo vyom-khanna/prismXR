@@ -1,0 +1,8 @@
+# Python 3.11-3.13. Install torch/torchvision from the CUDA index matching your driver, e.g.:
+#   pip install torch==2.11.0 torchvision --index-url https://download.pytorch.org/whl/cu128
+torch==2.11.0
+torchvision
+numpy
+pyyaml
+open_clip_torch
+# system dependency: ffmpeg / ffprobe on PATH

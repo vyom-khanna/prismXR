@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pth
+*.pt
+*.pyth
+*.ckpt
+*.MP4
+*.mp4
+submission/weights/
+.vscode/
