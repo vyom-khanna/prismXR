@@ -65,7 +65,9 @@ pip install -r requirements.txt
 Docker: `docker build -t prism . && docker run --gpus all -v /data:/data prism /data/v.mp4 /data/out.json`
 
 Weights are expected in `weights/` (override with `PRISM_WEIGHTS`):
-`SlowFast.pyth`, `actionformer/epic_slowfast_{verb,noun}.pth.tar`, `clip/open_clip_pytorch_model.bin`, `epic_prior.npz`.
+`SlowFast_model.pyth` (SlowFast-R50 EPIC-100, model state only), `actionformer/epic_slowfast_{verb,noun}_ema.pth.tar`
+(ActionFormer EPIC-100 EMA weights), `clip/open_clip_fp16.bin` (fp16 OpenCLIP ViT-L/14 DataComp), `epic_prior.npz`
+(P(noun|verb) from the EPIC-100 *train* annotations).
 
 Environment variables: `PRISM_TEAM_ID` (default `Opus 5.5 High`), `PRISM_WEIGHTS`, `PRISM_CACHE` (optional
 feature cache), `PRISM_FFMPEG` / `PRISM_FFPROBE` (if not on PATH), `PRISM_PYTHON` (interpreter for run.sh).
@@ -80,11 +82,13 @@ feature cache), `PRISM_FFMPEG` / `PRISM_FFPROBE` (if not on PATH), `PRISM_PYTHON
 
 ## 4. Results (our local re-implementation of the four metrics; approximate)
 
+Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **35.2**.
+
 | Metric (weight) | Uniform baseline | **Ours** |
 |---|---|---|
-| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **15.0** |
-| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **35.6** (upper bound with perfect actions: 61.0) |
-| Highlight F1 vs top-15 % human frames (25 %) | 14.1 | **31.2** (human-vs-consensus: 37.6) |
+| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **14.3** |
+| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **35.3** (upper bound with perfect actions: 61.0) |
+| Highlight F1 vs top-15 % human frames (25 %) | 14.1 | **30.9** (human-vs-consensus: 37.6) |
 | Label accuracy (10 %) | — | **100** (48/48) |
 
 Latency on an RTX 4050 Laptop (6 GB): sports videos ≈ 0.1× real time, 1080p EPIC videos ≈ 0.4× real time

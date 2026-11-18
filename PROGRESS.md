@@ -168,3 +168,20 @@ Next: tools/run_all.py on all 187 videos -> validate (--manifest --classes) -> p
 - Bug fixed: video_io.iter_frames deadlocked on P30_08 (stderr PIPE never drained while reading stdout; ffmpeg blocked on decode-error spam). stderr now goes to a temp file.
 - Speed: EPIC ≈0.4x realtime; FPVSum 0.1–0.4x (slower when laptop busy). timings.csv alongside outputs.
 Next: package outside OneDrive (copy outputs into submission/outputs), Docker build test, integrity rename test, demo video + deck (college name needed).
+
+## 2026-11-18 — Optimisation round (plan: ~/.claude/plans/i-want-you-to-fluffy-hanrahan.md)
+Backup of v1 package: `C:\prism_submission\Opus 5.5 High_v1\`. Dev harness `tools/epic_dev.py` (own-feature dets cached in
+`C:/prism_data/dev_outputs/own_dets.npz`; 2-fold CV by participant; fold mAP is averaged per fold, so compare "all-138" mAP to score.py).
+**Phase A diagnosis** (`tools/diag_epic.py`):
+- mAP limited by LABELS: oracle noun on our segments 17.8→40.7 (fold-avg), oracle verb →28.4, both →63.7. Verb proposals recall 92% @tIoU0.5.
+- Coverage limited by POSITIONS: GT labels on our dets only 35.3→36.0; GT positions w/o labels → 52.6; GT segs + SlowFast labels → 45.4; ceiling 60.6.
+**Density model** (`prism/density.py`, `tools/train_density.py`, EPIC train split only, 485 videos): window-count corr 0.42 on val (same on released/own feats).
+  Selection: density alone 32.3 (worse); added to the pair-aware selector `CovCfg(dens_w=0.2)` 35.27→35.97 (both folds up). Candidate.
+**Pairing** grid: noun-evidence exponent b=0.75 → all-138 mAP 14.26→14.61 (both folds up); symmetric noun-anchored proposals hurt.
+Next: Phase C LaViLa TimeSformer-L EK100 classifier (verb/noun/action heads) to rescore proposals.
+**Segment classifier** (`prism/segcls.py`, `tools/train_segcls.py`; EPIC train split only, GT segments + jittered copies;
+verb/noun/1931-pair action heads on mean/max/context-pooled SlowFast feats+probs). Val GT segments, own feats:
+top-1 verb 61.2→66.3, noun 48.7→52.2, action 35.1→41.9 (vs SlowFast clip-mean).
+Pairing evidence 0.4 det + 0.3 segcls-noun + 0.3 action-head(noun | detected verb), noun_pow 0.75 (verb rescoring hurt; alt verbs, more nouns: no gain).
+**Integrated (tools/eval_pipeline_epic.py, same code path as run.sh): all-138 mAP 14.28→17.40, coverage 35.34→38.55 (dens_w 0.2).**
+Est. total 35.2 → ~37.3. New weights: epic_segcls.pt, epic_density.pt.

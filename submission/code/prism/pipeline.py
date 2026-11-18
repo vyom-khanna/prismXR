@@ -67,9 +67,12 @@ def epic_features(video: str) -> dict:
     return F
 
 
-def epic_actions(F: dict, dur: float, t: dict) -> list[dict]:
+def epic_actions(F: dict, dur: float, t: dict) -> tuple[list[dict], tuple]:
+    """-> (actions, (density rate, t_center))."""
+    from .density import Density
     from .epic_detector import ActionFormerEPIC
     from .pairing import PairCfg, pair_actions
+    from .segcls import SegCls
 
     t0 = time.perf_counter()
     det = {}
@@ -83,8 +86,20 @@ def epic_actions(F: dict, dur: float, t: dict) -> list[dict]:
     with open(C.CLASSES_JSON) as f:
         cls = json.load(f)
     prior = np.load(os.path.join(C.WEIGHTS_DIR, "epic_prior.npz"))["p_n_given_v"]
+    t0 = time.perf_counter()
+    sc = SegCls()
+    pairs = sc.pairs.numpy() if hasattr(sc.pairs, "numpy") else np.asarray(sc.pairs)
+
+    def seg_model(segs):
+        pv, pn, pa = sc.predict(F["feats"], F["verb"], F["noun"], F["t_center"], segs)
+        return pv, pn, pa, pairs
+
     acts = pair_actions(det["verb"], det["noun"], F["noun"], F["t_center"], prior,
-                        cls["verbs"], cls["nouns"], PairCfg())
+                        cls["verbs"], cls["nouns"], PairCfg(), seg_model=seg_model)
+    del sc
+    dens = Density().predict(F["feats"], F["verb"], F["noun"])
+    _free()
+    t["segcls"] = time.perf_counter() - t0
     out = []
     for a in acts:
         s, e = max(0.0, a["segment"][0]), min(dur, a["segment"][1])
@@ -92,7 +107,7 @@ def epic_actions(F: dict, dur: float, t: dict) -> list[dict]:
         if e > s:
             out.append({"segment": [s, e], "verb": a["verb"], "noun": a["noun"],
                         "score": round(min(max(a["score"], 0.0), 1.0), 6)})
-    return out
+    return out, (dens, F["t_center"])
 
 
 def run(video: str, out: str, timings: dict | None = None) -> dict:
@@ -128,9 +143,9 @@ def run(video: str, out: str, timings: dict | None = None) -> dict:
         t0 = time.perf_counter()
         F = epic_features(video)
         t["slowfast"] = time.perf_counter() - t0
-        actions = epic_actions(F, dur, t)
+        actions, dens = epic_actions(F, dur, t)
         t0 = time.perf_counter()
-        segs = SC.select(actions, dur) or H.uniform_segments(dur)
+        segs = SC.select(actions, dur, SC.CovCfg(), density=dens) or H.uniform_segments(dur)
     else:
         t0 = time.perf_counter()
         imp = sports.importance(frames, emb, ts, dur, text_pos, text_neg)

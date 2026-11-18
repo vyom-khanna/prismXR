@@ -27,9 +27,14 @@ class CovCfg:
     p_cap: float = 0.95
     fill_rest: bool = True      # spend leftover budget on uncovered stretches
     widen: bool = True          # then grow windows to use the last (<MIN_SEG) seconds of budget
+    dens_pow: float = 0.0       # p_i *= (local action density / mean density) ** dens_pow   (0 = off)
+    dens_w: float = 0.2         # + dens_w * (expected #actions in window, from the density model)
+    dens_smooth: int = 5        # density smoothing (feature steps) before reading it at instance midpoints
 
 
-def select(actions: list[dict], dur: float, cfg: CovCfg = CovCfg(), budget: float | None = None):
+def select(actions: list[dict], dur: float, cfg: CovCfg = CovCfg(), budget: float | None = None,
+           density: tuple | None = None):
+    """density: optional (rate [T], t_center [T]) from prism.density (expected action midpoints per step)."""
     budget = C.TARGET_FILL * dur if budget is None else budget
     if budget < C.MIN_SEG or not actions:
         if not actions:
@@ -41,7 +46,17 @@ def select(actions: list[dict], dur: float, cfg: CovCfg = CovCfg(), budget: floa
     acts = sorted(actions, key=lambda x: -x["score"])[: cfg.max_instances]
     mids = np.array([(a["segment"][0] + a["segment"][1]) / 2 for a in acts])
     sc = np.array([a["score"] for a in acts], float)
-    p = np.clip((sc / max(sc.max(), 1e-9)) ** cfg.calib_pow, 0, cfg.p_cap)
+    p = (sc / max(sc.max(), 1e-9)) ** cfg.calib_pow
+    use_d = density is not None and len(density[0]) > 0 and (cfg.dens_pow or cfg.dens_w)
+    if use_d:
+        lam, tc = np.asarray(density[0], float), np.asarray(density[1], float)
+        k = max(1, cfg.dens_smooth)
+        lam_s = np.convolve(np.pad(lam, (k // 2, k - 1 - k // 2), mode="edge"), np.ones(k) / k, "valid")
+        if cfg.dens_pow:
+            rel = np.interp(mids, tc, lam_s) / max(lam_s.mean(), 1e-9)
+            p = p * rel ** cfg.dens_pow
+            p = p / max(p.max(), 1e-9)
+    p = np.clip(p, 0, cfg.p_cap)
     pair_ids = {}
     pid = np.array([pair_ids.setdefault((a["verb"], a["noun"]), len(pair_ids)) for a in acts])
     o = np.argsort(mids)
@@ -61,13 +76,17 @@ def select(actions: list[dict], dur: float, cfg: CovCfg = CovCfg(), budget: floa
     hi = np.searchsorted(mids, cands[:, 1], "right")
     length = cands[:, 1] - cands[:, 0]
     alive = np.ones(len(cands), bool)
+    dgain = 0.0
+    if use_d and cfg.dens_w:
+        dcs = np.concatenate([[0.0], np.cumsum(lam)])
+        dgain = cfg.dens_w * (dcs[np.searchsorted(tc, cands[:, 1], "right")] - dcs[np.searchsorted(tc, cands[:, 0], "left")])
 
     chosen, used = [], 0.0
     while True:
         # marginal gain of instance i = p_i * resid[pair_i] (0 if already covered)
         w = np.where(covered, 0.0, p * resid[pid])
         cs = np.concatenate([[0.0], np.cumsum(w)])
-        gain = cs[hi] - cs[lo]
+        gain = cs[hi] - cs[lo] + dgain
         ratio = np.where(alive & (used + length <= budget + 1e-6), gain / length, -1.0)
         j = int(np.argmax(ratio))
         if ratio[j] <= 1e-9:

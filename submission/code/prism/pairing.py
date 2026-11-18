@@ -18,7 +18,11 @@ import numpy as np
 class PairCfg:
     top_verbs: int = 1500     # verb detections considered
     nouns_per_verb: int = 8   # nouns emitted per verb detection (2-fold CV: 1..15; >8 within noise)
-    w_det: float = 0.5        # weight of noun-detection evidence vs clip-classifier evidence
+    w_det: float = 0.4        # weight of noun-detection evidence
+    w_clip: float = 0.0       # weight of SlowFast clip-softmax noun evidence (used if no segment classifier)
+    w_seg: float = 0.3        # weight of segment-classifier noun head (prism/segcls.py)
+    w_act: float = 0.3        # weight of segment-classifier action head, conditioned on the detected verb
+    noun_pow: float = 0.75    # action score = verb_score * noun_evidence ** noun_pow
     prior_pow: float = 0.0    # exponent on P(noun|verb); 0 disables (CV: prior did not help)
     min_tiou: float = 0.1     # noun det must overlap the verb det at least this much
     max_actions: int = 2000
@@ -43,8 +47,9 @@ def segment_mean(prob: np.ndarray, t_center: np.ndarray, segs: np.ndarray) -> np
 
 
 def pair_actions(verb_dets, noun_dets, clip_noun, t_center, prior_n_given_v, verbs, nouns,
-                 cfg: PairCfg = PairCfg()):
-    """verb_dets/noun_dets: (segs [N,2], scores [N], labels [N]). Returns list of action dicts."""
+                 cfg: PairCfg = PairCfg(), seg_model=None):
+    """verb_dets/noun_dets: (segs [N,2], scores [N], labels [N]). Returns list of action dicts.
+    seg_model: optional callable segs [N,2] -> (verb probs, noun probs, action probs, pairs [A,2])."""
     vs, vsc, vl = verb_dets
     ns, nsc, nl = noun_dets
     if len(vs) == 0:
@@ -66,8 +71,22 @@ def pair_actions(verb_dets, noun_dets, clip_noun, t_center, prior_n_given_v, ver
     cls_ev = segment_mean(clip_noun, t_center, vs) if clip_noun is not None and len(clip_noun) else np.zeros_like(det_ev)
     cls_ev = cls_ev / np.maximum(cls_ev.sum(1, keepdims=True), 1e-9)
 
-    w = cfg.w_det if len(ns) else 0.0
-    ev = w * det_ev + (1 - w) * cls_ev
+    if seg_model is not None:
+        _, seg_n, seg_a, pairs = seg_model(vs)
+        # action head -> noun distribution given the detected verb
+        amap = np.full((97, 300), -1, np.int64)
+        amap[pairs[:, 0], pairs[:, 1]] = np.arange(len(pairs))
+        idx = amap[vl]
+        act_ev = np.zeros_like(det_ev)
+        ok = idx >= 0
+        act_ev[ok] = seg_a[np.nonzero(ok)[0], idx[ok]]
+        act_ev /= np.maximum(act_ev.sum(1, keepdims=True), 1e-9)
+        w = cfg.w_det if len(ns) else 0.0
+        rest = cfg.w_clip + cfg.w_seg + cfg.w_act
+        ev = w * det_ev + (1 - w) * (cfg.w_clip * cls_ev + cfg.w_seg * seg_n + cfg.w_act * act_ev) / max(rest, 1e-9)
+    else:
+        w = cfg.w_det if len(ns) else 0.0
+        ev = w * det_ev + (1 - w) * cls_ev
     if cfg.prior_pow > 0 and prior_n_given_v is not None:
         ev = ev * prior_n_given_v[vl] ** cfg.prior_pow
     ev = ev / np.maximum(ev.sum(1, keepdims=True), 1e-9)
@@ -77,7 +96,7 @@ def pair_actions(verb_dets, noun_dets, clip_noun, t_center, prior_n_given_v, ver
     acts = []
     for i in range(len(vs)):
         for n in top[i]:
-            s = float(vsc[i] * ev[i, n])
+            s = float(vsc[i] * ev[i, n] ** cfg.noun_pow)
             if s <= 0:
                 continue
             acts.append((s, float(vs[i, 0]), float(vs[i, 1]), verbs[vl[i]], nouns[n]))
