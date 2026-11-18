@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import subprocess
+import tempfile
 
 import numpy as np
 
@@ -68,7 +69,10 @@ def iter_frames(path: str, fps: float, size: tuple[int, int], chunk: int = 64, h
         cmd += ["-hwaccel", "auto"]
     cmd += ["-i", path, "-vf", f"fps={fps},scale={w}:{h}", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
     fsz = w * h * 3
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=fsz * chunk)
+    # stderr goes to a temp file, not a pipe: files with many decode errors would otherwise fill the
+    # undrained stderr pipe and deadlock ffmpeg (blocked writing stderr) against us (blocked reading stdout).
+    errf = tempfile.TemporaryFile()
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=errf, bufsize=fsz * chunk)
     got = 0
     try:
         while True:
@@ -81,8 +85,10 @@ def iter_frames(path: str, fps: float, size: tuple[int, int], chunk: int = 64, h
                 yield np.frombuffer(buf[: k * fsz], np.uint8).reshape(k, h, w, 3)
     finally:
         p.stdout.close()
-        err = p.stderr.read()
         p.wait()
+        errf.seek(0)
+        err = errf.read()
+        errf.close()
     if p.returncode != 0 and got == 0:
         if hwaccel:
             yield from iter_frames(path, fps, size, chunk, hwaccel=False)

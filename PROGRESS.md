@@ -155,3 +155,16 @@ py -3.13 tools/eval/score.py --pred C:/prism_data/dev_outputs/vN/outputs --only 
 5. Label fixes (bike vs motor, plane vs jumping prompts); sports-branch refinements.
 6. Phase 6 gate: if pair mAP < 10% → train joint head on released train features.
 7. Packaging: README, weights handling, Docker test, integrity scan (rename test), demo video, deck.
+
+## 2026-11-18 06:58 — EPIC download COMPLETE
+All 138 EPIC val videos downloaded and MD5-verified (172 GB in C:/prism_data/epic). Repo pushed to github.com/vyom-khanna/prismXR (private, main).
+Next: tools/run_all.py on all 187 videos -> validate (--manifest --classes) -> package outside OneDrive -> Docker test -> demo video + deck (college name needed).
+
+## 2026-11-18 16:40 — FULL 187-video run COMPLETE (C:/prism_data/dev_outputs/final/outputs)
+- 186 real outputs + 1 placeholder (Scuba_KD74Ywuy9ng, video unavailable). Validator: 187/187 valid (--manifest --classes).
+  Only budget warnings: 3 EPIC videos < 26.7 s (P03_26, P26_30, P28_23) where one 4 s segment > 15%.
+- Local score (our own features end-to-end): mAP 14.28 · Coverage 35.34 · Highlight F1 30.88 · Label 97.96 (48/48 real; placeholder counts wrong) → **WEIGHTED 35.22**.
+  mAP by tIoU 0.1–0.5: 16.24/15.48/14.64/13.39/11.64; coverage variants mid 35.34 / ov50 33.79 / any 45.12.
+- Bug fixed: video_io.iter_frames deadlocked on P30_08 (stderr PIPE never drained while reading stdout; ffmpeg blocked on decode-error spam). stderr now goes to a temp file.
+- Speed: EPIC ≈0.4x realtime; FPVSum 0.1–0.4x (slower when laptop busy). timings.csv alongside outputs.
+Next: package outside OneDrive (copy outputs into submission/outputs), Docker build test, integrity rename test, demo video + deck (college name needed).
