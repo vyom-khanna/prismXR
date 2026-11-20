@@ -185,3 +185,8 @@ top-1 verb 61.2→66.3, noun 48.7→52.2, action 35.1→41.9 (vs SlowFast clip-m
 Pairing evidence 0.4 det + 0.3 segcls-noun + 0.3 action-head(noun | detected verb), noun_pow 0.75 (verb rescoring hurt; alt verbs, more nouns: no gain).
 **Integrated (tools/eval_pipeline_epic.py, same code path as run.sh): all-138 mAP 14.28→17.40, coverage 35.34→38.55 (dens_w 0.2).**
 Est. total 35.2 → ~37.3. New weights: epic_segcls.pt, epic_density.pt.
+## 2026-11-20 — v2 measured & packaged
+Full run `C:/prism_data/dev_outputs/final2` (187/187 valid): mAP 17.40 · Cov 38.55 · F1 30.88 · Label 97.96 → **WEIGHTED 37.28** (v1 35.22).
+Package `C:\prism_submission\Opus 5.5 High\` rebuilt (v2; v1 kept in `..._v1`), rename test IDENTICAL x3, static scan CLEAN.
+User goal 80/100: infeasible legitimately (perfect predictions cap ≈84; realistic ceiling ≈48). Fable advisor plan: coverage-rule
+robustness, singleton-weighted density / actionness detector + soft pair membership, LaViLa gate (+~1 total).

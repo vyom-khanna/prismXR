@@ -35,9 +35,10 @@ def main():
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--jitter", type=int, default=3, help="jittered copies per GT segment")
     ap.add_argument("--noise", type=float, default=0.3)
+    ap.add_argument("--seed", type=int, default=0)
     a = ap.parse_args()
-    rng = np.random.default_rng(0)
-    torch.manual_seed(0)
+    rng = np.random.default_rng(a.seed)
+    torch.manual_seed(a.seed)
     rows = {}
     for r in csv.DictReader(open(TRAIN_CSV, encoding="utf-8")):
         rows.setdefault(r["video_id"], []).append((ts(r["start_timestamp"]), ts(r["stop_timestamp"]),
