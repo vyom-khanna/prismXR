@@ -190,3 +190,8 @@ Full run `C:/prism_data/dev_outputs/final2` (187/187 valid): mAP 17.40 · Cov 38
 Package `C:\prism_submission\Opus 5.5 High\` rebuilt (v2; v1 kept in `..._v1`), rename test IDENTICAL x3, static scan CLEAN.
 User goal 80/100: infeasible legitimately (perfect predictions cap ≈84; realistic ceiling ≈48). Fable advisor plan: coverage-rule
 robustness, singleton-weighted density / actionness detector + soft pair membership, LaViLa gate (+~1 total).
+- Singleton-weighted density (target = Σ 1/#occurrences of the pair in the video; `train_density.py --singleton`) → now
+  `weights/epic_density.pt` (old = epic_density_all.pt), `CovCfg.dens_w=1.2`: coverage 38.55→**39.34** (mid), ov50 36.7→38.2, both folds up.
+- Coverage-rule robustness: added `cont` (fully contained) variant to score.py; `CovCfg.margin` trades mid↔cont, blend flat → margin 0 kept.
+- LaViLa: vendored `prism/lavila/timesformer.py` (MIT) + `prism/lavila_cls.py`. ONLY verb/noun heads used — LaViLa's
+  action-head index list is built from train+VAL annotations (would leak val pair inventory). Gate: `tools/check_lavila.py`.

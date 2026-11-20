@@ -158,7 +158,7 @@ def coverage_video(gt_rows, segs, dur):
     pairs = {(v, n) for _, _, v, n in gt_rows}
     if not pairs:
         return None
-    hit = {"mid": set(), "ov50": set(), "any": set()}
+    hit = {"mid": set(), "ov50": set(), "any": set(), "cont": set()}
     for s, e, v, n in gt_rows:
         mid, L = (s + e) / 2, max(e - s, 1e-6)
         for hs, he in segs:
@@ -169,6 +169,8 @@ def coverage_video(gt_rows, segs, dur):
                 hit["ov50"].add((v, n))
             if ov > 0:
                 hit["any"].add((v, n))
+            if hs <= s and e <= he:
+                hit["cont"].add((v, n))
     total = sum(he - hs for hs, he in segs)
     ratio = total / dur if dur > 0 else 0
     penalty = min(1.0, BUDGET / ratio) if ratio > BUDGET else 1.0  # assumed soft penalty

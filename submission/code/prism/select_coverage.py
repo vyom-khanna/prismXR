@@ -28,7 +28,8 @@ class CovCfg:
     fill_rest: bool = True      # spend leftover budget on uncovered stretches
     widen: bool = True          # then grow windows to use the last (<MIN_SEG) seconds of budget
     dens_pow: float = 0.0       # p_i *= (local action density / mean density) ** dens_pow   (0 = off)
-    dens_w: float = 0.2         # + dens_w * (expected #actions in window, from the density model)
+    dens_w: float = 1.2         # + dens_w * (expected #actions in window, from the density model)
+    margin: float = 0.0         # instance counts as covered only if its midpoint is >= margin inside the window
     dens_smooth: int = 5        # density smoothing (feature steps) before reading it at instance midpoints
 
 
@@ -72,8 +73,8 @@ def select(actions: list[dict], dur: float, cfg: CovCfg = CovCfg(), budget: floa
         st = np.arange(0.0, dur - L + 1e-9, cfg.step)
         cands.append(np.stack([st, st + L], 1))
     cands = np.concatenate(cands) if cands else np.array([[0.0, min(dur, C.MIN_SEG)]])
-    lo = np.searchsorted(mids, cands[:, 0], "left")
-    hi = np.searchsorted(mids, cands[:, 1], "right")
+    lo = np.searchsorted(mids, cands[:, 0] + cfg.margin, "left")
+    hi = np.searchsorted(mids, cands[:, 1] - cfg.margin, "right")
     length = cands[:, 1] - cands[:, 0]
     alive = np.ones(len(cands), bool)
     dgain = 0.0

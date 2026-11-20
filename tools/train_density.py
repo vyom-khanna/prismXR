@@ -28,10 +28,11 @@ def ts(s):
     return int(h) * 3600 + int(m) * 60 + float(x)
 
 
-def load():
-    mids = {}
+def load(singleton=False):
+    mids, keys = {}, {}
     for r in csv.DictReader(open(TRAIN_CSV, encoding="utf-8")):
         mids.setdefault(r["video_id"], []).append((ts(r["start_timestamp"]) + ts(r["stop_timestamp"])) / 2)
+        keys.setdefault(r["video_id"], []).append((r["verb_class"], r["noun_class"]))
     data = {}
     for v, m in mids.items():
         p = os.path.join(FEAT, v + ".npz")
@@ -41,7 +42,12 @@ def load():
             x = make_input(z["feats"], z["v_prob"], z["n_prob"])
         y = np.zeros(len(x), np.float32)
         idx = np.clip(np.floor(np.array(m) / STEP - 0.5).astype(int), 0, len(x) - 1)
-        np.add.at(y, idx, 1.0)
+        if singleton:  # weight = 1 / (#occurrences of this pair in the video): target = new distinct pairs
+            from collections import Counter
+            c = Counter(keys[v])
+            np.add.at(y, idx, np.array([1.0 / c[k] for k in keys[v]], np.float32))
+        else:
+            np.add.at(y, idx, 1.0)
         data[v] = (x, y)
     return data
 
@@ -72,10 +78,11 @@ def main():
     ap.add_argument("--epochs", type=int, default=40)
     ap.add_argument("--noise", type=float, default=0.3, help="feature noise (x feature std) for robustness")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--singleton", action="store_true", help="target = 1/pair-count weighted midpoints")
     a = ap.parse_args()
     torch.manual_seed(a.seed)
     rng = np.random.default_rng(a.seed)
-    data = load()
+    data = load(a.singleton)
     vids = sorted(data)
     parts = sorted({v.split("_")[0] for v in vids})
     hold = {p for i, p in enumerate(parts) if i % 10 == 3}
