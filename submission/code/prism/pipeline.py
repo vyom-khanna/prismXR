@@ -67,8 +67,22 @@ def epic_features(video: str) -> dict:
     return F
 
 
-def epic_actions(F: dict, dur: float, t: dict) -> tuple[list[dict], tuple]:
-    """-> (actions, (density rate, t_center))."""
+def epic_lavila(video: str, segs: np.ndarray):
+    cp = _cache_path(video, "lav")
+    if cp and os.path.exists(cp):
+        with np.load(cp) as z:
+            if len(z["segs"]) == len(segs) and np.allclose(z["segs"], segs, atol=0.05):
+                return z["v"].astype(np.float32), z["n"].astype(np.float32)
+    from .lavila_cls import classify_segments
+    pv, pn = classify_segments(video, segs)
+    _free()
+    if cp:
+        np.savez_compressed(cp, segs=segs, v=pv.astype(np.float16), n=pn.astype(np.float16))
+    return pv, pn
+
+
+def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=None) -> tuple[list[dict], tuple]:
+    """-> (actions, (density rate, t_center)). LaViLa runs if `video` is given (or `lav`=(segs, pv, pn))."""
     from .density import Density
     from .epic_detector import ActionFormerEPIC
     from .pairing import PairCfg, pair_actions
@@ -86,17 +100,39 @@ def epic_actions(F: dict, dur: float, t: dict) -> tuple[list[dict], tuple]:
     with open(C.CLASSES_JSON) as f:
         cls = json.load(f)
     prior = np.load(os.path.join(C.WEIGHTS_DIR, "epic_prior.npz"))["p_n_given_v"]
+    from .pairing import _tiou_matrix
+    if lav is None and video is not None:
+        from .lavila_cls import nms_segments
+        t0 = time.perf_counter()
+        vs_, vsc_, _ = det["verb"]
+        lsegs = nms_segments(vs_, vsc_, C.LAV_NMS, C.LAV_TOPK)
+        lav = (lsegs,) + epic_lavila(video, lsegs)
+        t["lavila"] = time.perf_counter() - t0
+
     t0 = time.perf_counter()
     sc = SegCls()
     pairs = sc.pairs.numpy() if hasattr(sc.pairs, "numpy") else np.asarray(sc.pairs)
 
     def seg_model(segs):
         pv, pn, pa = sc.predict(F["feats"], F["verb"], F["noun"], F["t_center"], segs)
+        if lav is not None and len(lav[0]) and C.LAV_W > 0:
+            tm = _tiou_matrix(segs, lav[0])
+            j = tm.argmax(1)
+            ok = tm[np.arange(len(segs)), j] >= C.LAV_MATCH
+            pn = np.where(ok[:, None], (1 - C.LAV_W) * pn + C.LAV_W * lav[2][j], pn)
         return pv, pn, pa, pairs
 
     acts = pair_actions(det["verb"], det["noun"], F["noun"], F["t_center"], prior,
                         cls["verbs"], cls["nouns"], PairCfg(), seg_model=seg_model)
     del sc
+    if lav is not None and C.LAV_ALT > 0:
+        for k, (s, e) in enumerate(lav[0]):
+            pv, pn = lav[1][k], lav[2][k]
+            for a_ in np.argsort(-pv)[:C.LAV_ALT]:
+                for b_ in np.argsort(-pn)[:C.LAV_ALT]:
+                    acts.append({"segment": [float(s), float(e)], "verb": cls["verbs"][a_], "noun": cls["nouns"][b_],
+                                 "score": C.LAV_ALT_W * float(pv[a_] * pn[b_]) ** 0.75})
+        acts = sorted(acts, key=lambda a: -a["score"])[:2000]
     dens = Density().predict(F["feats"], F["verb"], F["noun"])
     _free()
     t["segcls"] = time.perf_counter() - t0
@@ -143,7 +179,7 @@ def run(video: str, out: str, timings: dict | None = None) -> dict:
         t0 = time.perf_counter()
         F = epic_features(video)
         t["slowfast"] = time.perf_counter() - t0
-        actions, dens = epic_actions(F, dur, t)
+        actions, dens = epic_actions(F, dur, t, video=video)
         t0 = time.perf_counter()
         segs = SC.select(actions, dur, SC.CovCfg(), density=dens) or H.uniform_segments(dur)
     else:

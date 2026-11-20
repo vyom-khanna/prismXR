@@ -3,7 +3,11 @@ The action head (indexes LaViLa's train+val pair list) is dropped on purpose.
 
     C:/prism_env/Scripts/python.exe tools/slim_lavila.py
 """
+import pathlib
+
 import torch
+
+pathlib.PosixPath = pathlib.WindowsPath  # checkpoint args were pickled on Linux
 
 SRC = r"C:/prism_data/weights/lavila/tsf_l_ek100_cls.pth"
 DST = r"C:/prism_data/weights/lavila/tsf_l_ek100_vn_fp16.pth"

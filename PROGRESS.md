@@ -195,3 +195,15 @@ robustness, singleton-weighted density / actionness detector + soft pair members
 - Coverage-rule robustness: added `cont` (fully contained) variant to score.py; `CovCfg.margin` trades mid↔cont, blend flat → margin 0 kept.
 - LaViLa: vendored `prism/lavila/timesformer.py` (MIT) + `prism/lavila_cls.py`. ONLY verb/noun heads used — LaViLa's
   action-head index list is built from train+VAL annotations (would leak val pair inventory). Gate: `tools/check_lavila.py`.
+## 2026-11-20 ~23:55 — PAUSED (user needs compute)
+- LaViLa gate (21 val videos, `tools/check_lavila.py` + `tools/eval_lavila_pairing.py`): GT-segment top-1 action segcls 36.4 / LaViLa 41.8 / avg 44.3.
+  Subset pair mAP 30.45→36.13, coverage 39.77→43.19 with LAV_W=1.0 (LaViLa noun replaces segcls noun where tIoU≥0.5) + 3x3 alt pairs at 0.25.
+  Chosen on these 21 videos → the other 117 are the held-out check after the full run.
+- Integrated: `config.LAV_*`, `pipeline.epic_lavila` (cache tag `lav`), `lavila_cls.nms_segments/gather_clips/classify_segments`.
+  Weights: `weights/lavila/tsf_l_ek100_vn_fp16.pth` (0.8 GB; from `tools/slim_lavila.py`). requirements += einops, timm. README updated.
+  Fused SDPA attention tried: slower on Windows (0.49 vs 0.33 s/clip) → reverted, vendored timesformer.py identical to upstream.
+- Full run `C:/prism_data/dev_outputs/final3` STOPPED early: 53/187 outputs (48 FPVSum copied from final2 + 5 EPIC); 23 LaViLa caches.
+  **Resume** (skips finished videos, reuses caches; ~5 h for remaining EPIC):
+  `export PATH="<ffmpeg bin>:$PATH"; C:/prism_env/Scripts/python.exe tools/run_all.py --out C:/prism_data/dev_outputs/final3/outputs >> C:/prism_data/dev_outputs/final3/run.log 2>&1`
+  Then: placeholder → validate → score (report the 117 non-gate videos separately) → rename test → package v3.
+- Current safe package = v2 (37.28) in `C:\prism_submission\Opus 5.5 High\` (note: its code lacks singleton density; outputs are v2).

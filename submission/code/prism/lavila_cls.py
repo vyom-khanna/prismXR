@@ -75,3 +75,75 @@ def sample_ids(t0: float, t1: float, fps: float, n_frames: int) -> np.ndarray:
     seg = float(e - s - 1) / NUM_FRAMES
     ids = [(int(round(seg * i) + s) + min(int(round(seg * (i + 1)) + s), e)) // 2 for i in range(NUM_FRAMES)]
     return np.clip(np.array(ids), 0, n_frames - 1)
+
+
+def nms_segments(segs: np.ndarray, scores: np.ndarray, thr: float = 0.7, k: int = 200) -> np.ndarray:
+    """Class-agnostic greedy NMS over detection segments -> up to k distinct segments [k, 2]."""
+    o, keep = np.argsort(-scores), []
+    for i in o:
+        s, e = segs[i]
+        ok = True
+        for j in keep:
+            a, b = segs[j]
+            inter = max(0.0, min(e, b) - max(s, a))
+            if inter / ((e - s) + (b - a) - inter + 1e-9) > thr:
+                ok = False
+                break
+        if ok:
+            keep.append(i)
+        if len(keep) >= k:
+            break
+    return segs[keep].reshape(-1, 2)
+
+
+def gather_clips(video: str, segs, fps: float = 30.0) -> list[np.ndarray]:
+    """One streaming decode at 30 fps (short side 224, centre crop), keeping only the frames LaViLa needs."""
+    from .video_io import iter_frames, probe
+
+    info = probe(video)
+    n = max(1, int(info["duration"] * fps))
+    ids = [sample_ids(s, e, fps, n) for s, e in segs]
+    if not ids:
+        return []
+    need = np.unique(np.concatenate(ids))
+    W, H = info["width"], info["height"]
+    if info.get("rotation") in (90, -90, 270, -270):
+        W, H = H, W
+    if W >= H:
+        w, h = max(SIZE, int(round(W * SIZE / H / 2)) * 2), SIZE
+    else:
+        w, h = SIZE, max(SIZE, int(round(H * SIZE / W / 2)) * 2)
+    x0, y0 = (w - SIZE) // 2, (h - SIZE) // 2
+    keep, pos, ni = {}, 0, 0
+    for chunk in iter_frames(video, fps, (w, h)):
+        for f in chunk:
+            while ni < len(need) and need[ni] < pos:
+                ni += 1
+            if ni < len(need) and need[ni] == pos:
+                keep[pos] = f[y0:y0 + SIZE, x0:x0 + SIZE]
+            pos += 1
+    if not keep:
+        return [np.zeros((NUM_FRAMES, SIZE, SIZE, 3), np.uint8) for _ in ids]
+    have = np.array(sorted(keep))
+
+    def get(i):
+        if i in keep:
+            return keep[i]
+        return keep[int(have[np.clip(np.searchsorted(have, i), 0, len(have) - 1)])]
+
+    return [np.stack([get(int(i)) for i in idx]) for idx in ids]
+
+
+def classify_segments(video: str, segs: np.ndarray, bs: int = 4):
+    """-> (verb probs [N, 97], noun probs [N, 300]) for segments [N, 2] of `video`."""
+    if len(segs) == 0:
+        return np.zeros((0, 97), np.float32), np.zeros((0, 300), np.float32)
+    clips = gather_clips(video, segs)
+    m = LaViLaEPIC()
+    pv, pn = [], []
+    for i in range(0, len(clips), bs):
+        a, b = m.predict(np.stack(clips[i:i + bs]))
+        pv.append(a)
+        pn.append(b)
+    del m
+    return np.concatenate(pv), np.concatenate(pn)

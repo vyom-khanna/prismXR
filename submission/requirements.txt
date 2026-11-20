@@ -6,3 +6,5 @@ numpy
 pyyaml
 open_clip_torch
 # system dependency: ffmpeg / ffprobe on PATH
+einops==0.8.2
+timm==1.0.31
