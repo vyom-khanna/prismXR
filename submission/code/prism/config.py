@@ -24,7 +24,8 @@ TARGET_FILL = 0.149  # fill the budget (CV: fuller budget helps) with a margin f
 DECIMALS = 2
 
 # LaViLa (EPIC branch): classify the top distinct verb-detection segments
-LAV_TOPK = 200        # segments per video (class-agnostic NMS at LAV_NMS)
+LAV_TOPK = 300        # segments per video (class-agnostic NMS at LAV_NMS); output actions use all of them
+LAV_SEL_TOPK = 200    # highlight selection uses actions built from the top 200 only (2-fold CV: coverage drops with more)
 LAV_NMS = 0.7
 LAV_MATCH = 0.5       # a detection uses LaViLa's noun probs if it overlaps a classified segment by tIoU >= this
 LAV_W = 1.0           # weight of LaViLa noun probs vs segment-classifier noun probs (chosen on a 21-video val subset)

@@ -71,8 +71,8 @@ def actions(C=None, pair=None):
 
 def score(name, res, cov=None):
     cc = SC.CovCfg(**(cov or {}))
-    acts = {v: a for v, (a, d) in res.items()}
-    segs = {v: SC.select(a, E.MAN[v][0], cc, density=d) for v, (a, d) in res.items()}
+    acts = {v: r[0] for v, r in res.items()}
+    segs = {v: SC.select(r[2], E.MAN[v][0], cc, density=r[1]) for v, r in res.items()}
     f = [(E.pair_map(acts, F), E.coverage(segs, F)) for F in E.FOLDS]
     m, c = E.pair_map(acts), E.coverage(segs)
     print(f"{name:40s} mAP {m:6.2f} [{f[0][0]:6.2f} {f[1][0]:6.2f}]  cov {c:6.2f} [{f[0][1]:6.2f} {f[1][1]:6.2f}]"

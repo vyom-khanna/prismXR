@@ -12,8 +12,8 @@ acts, segs = {}, {}
 for i, v in enumerate(E.EPIC):
     with np.load(E.feat_file(v)) as z:
         F = {k: z[k] for k in z.files}
-    a, dens = PL.epic_actions(F, E.MAN[v][0], {})
+    a, dens, sel = PL.epic_actions(F, E.MAN[v][0], {})
     acts[v] = a
-    segs[v] = SC.select(a, E.MAN[v][0], SC.CovCfg(), density=dens)
+    segs[v] = SC.select(sel, E.MAN[v][0], SC.CovCfg(), density=dens)
 m, c = E.report("submission EPIC stage (current code)", acts, segs=segs)
 print(f"all-138 pair mAP {E.pair_map(acts):.2f}   coverage {E.coverage(segs):.2f}")

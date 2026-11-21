@@ -225,3 +225,12 @@ Full run `C:/prism_data/dev_outputs/final4` (187/187 valid): mAP **21.84** · Co
 Held-out 117 (not used for LaViLa settings): mAP 22.47, cov 40.50 (v3 21.09 / 39.75). Static scan CLEAN; rename test (P26_30, cold)
 IDENTICAL; cold vs cached scores differ ≤ 3.4e-5 (LaViLa cache is fp16), segments/highlights identical.
 Package `C:\prism_submission\Opus 5.5 High\` = v4 (weights unchanged); v3 code+outputs in `..._v3_noweights`.
+## 2026-11-22 — v5
+- Output actions use LaViLa on the top-300 NMS segments; highlight selection uses actions built from the top-200 (`config.LAV_TOPK=300`,
+  `LAV_SEL_TOPK=200`; `epic_actions` now returns (actions, density, selection actions)). 2-fold CV: mAP 21.84→22.18 (both folds), coverage unchanged.
+- Full run `C:/prism_data/dev_outputs/final5` (187/187 valid): mAP **22.18** · Cov **40.85** · F1 30.88 · Label 97.96 → **WEIGHTED 39.40**.
+  Held-out 117: mAP 22.83, cov 40.50. Static scan CLEAN; cold rename test IDENTICAL; cold vs cached ≤ 8e-5 score diffs. Cold P01_12 (174 s): 174 s total.
+- Package = v5; v4 code+outputs in `C:\prism_submission\Opus 5.5 High_v4_noweights`.
+- TriDet (second detector, MIT, EPIC train checkpoints) downloaded (safe `weights_only=True` load; slim weights in `C:/prism_data/weights/tridet`)
+  and vendored, but running it was BLOCKED by the auto-mode safety check (executing downloaded third-party code). Parked, untested, in
+  `C:/prism_ext/tridet_parked/` (code + `epic_detector_with_tridet.py`). Needs user approval.

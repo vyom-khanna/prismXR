@@ -88,8 +88,8 @@ def epic_lavila(video: str, segs: np.ndarray):
     return pv, pn
 
 
-def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=None) -> tuple[list[dict], tuple]:
-    """-> (actions, (density rate, t_center)). LaViLa runs if `video` is given (or `lav`=(segs, pv, pn))."""
+def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=None) -> tuple[list[dict], tuple, list[dict]]:
+    """-> (actions, (density rate, t_center), actions for highlight selection). LaViLa runs if `video` is given (or `lav`=(segs, pv, pn))."""
     from .density import Density
     from .epic_detector import ActionFormerEPIC
     from .pairing import PairCfg, pair_actions
@@ -116,44 +116,51 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
         lav = (lsegs,) + epic_lavila(video, lsegs)
         t["lavila"] = time.perf_counter() - t0
 
+    def build(lav):
+        sc = SegCls()
+        pairs = sc.pairs.numpy() if hasattr(sc.pairs, "numpy") else np.asarray(sc.pairs)
+
+        def seg_model(segs):
+            pv, pn, pa = sc.predict(F["feats"], F["verb"], F["noun"], F["t_center"], segs)
+            if lav is not None and len(lav[0]) and C.LAV_W > 0:
+                tm = _tiou_matrix(segs, lav[0])
+                j = tm.argmax(1)
+                ok = tm[np.arange(len(segs)), j] >= C.LAV_MATCH
+                pn = np.where(ok[:, None], (1 - C.LAV_W) * pn + C.LAV_W * lav[2][j], pn)
+            return pv, pn, pa, pairs
+
+        acts = pair_actions(det["verb"], det["noun"], F["noun"], F["t_center"], prior,
+                            cls["verbs"], cls["nouns"], PairCfg(), seg_model=seg_model)
+        del sc
+        if lav is not None and C.LAV_ALT > 0:
+            for k, (s, e) in enumerate(lav[0]):
+                pv, pn = lav[1][k], lav[2][k]
+                for a_ in np.argsort(-pv)[:C.LAV_ALT]:
+                    for b_ in np.argsort(-pn)[:C.LAV_ALT]:
+                        acts.append({"segment": [float(s), float(e)], "verb": cls["verbs"][a_], "noun": cls["nouns"][b_],
+                                     "score": C.LAV_ALT_W * float(pv[a_] * pn[b_]) ** 0.75})
+        if C.MERGE_TIOU < 1:
+            from .pairing import merge_duplicates
+            acts = merge_duplicates(acts, C.MERGE_TIOU)
+        acts = sorted(acts, key=lambda a: -a["score"])[:2000]
+        out = []
+        for a in acts:
+            s, e = max(0.0, a["segment"][0]), min(dur, a["segment"][1])
+            s, e = round(s, 2), round(e, 2)
+            if e > s:
+                out.append({"segment": [s, e], "verb": a["verb"], "noun": a["noun"],
+                            "score": round(min(max(a["score"], 0.0), 1.0), 6)})
+        return out
+
     t0 = time.perf_counter()
-    sc = SegCls()
-    pairs = sc.pairs.numpy() if hasattr(sc.pairs, "numpy") else np.asarray(sc.pairs)
-
-    def seg_model(segs):
-        pv, pn, pa = sc.predict(F["feats"], F["verb"], F["noun"], F["t_center"], segs)
-        if lav is not None and len(lav[0]) and C.LAV_W > 0:
-            tm = _tiou_matrix(segs, lav[0])
-            j = tm.argmax(1)
-            ok = tm[np.arange(len(segs)), j] >= C.LAV_MATCH
-            pn = np.where(ok[:, None], (1 - C.LAV_W) * pn + C.LAV_W * lav[2][j], pn)
-        return pv, pn, pa, pairs
-
-    acts = pair_actions(det["verb"], det["noun"], F["noun"], F["t_center"], prior,
-                        cls["verbs"], cls["nouns"], PairCfg(), seg_model=seg_model)
-    del sc
-    if lav is not None and C.LAV_ALT > 0:
-        for k, (s, e) in enumerate(lav[0]):
-            pv, pn = lav[1][k], lav[2][k]
-            for a_ in np.argsort(-pv)[:C.LAV_ALT]:
-                for b_ in np.argsort(-pn)[:C.LAV_ALT]:
-                    acts.append({"segment": [float(s), float(e)], "verb": cls["verbs"][a_], "noun": cls["nouns"][b_],
-                                 "score": C.LAV_ALT_W * float(pv[a_] * pn[b_]) ** 0.75})
-    if C.MERGE_TIOU < 1:
-        from .pairing import merge_duplicates
-        acts = merge_duplicates(acts, C.MERGE_TIOU)
-    acts = sorted(acts, key=lambda a: -a["score"])[:2000]
+    out = build(lav)
+    sel = out
+    if lav is not None and len(lav[0]) > C.LAV_SEL_TOPK:  # highlight selection uses the top LAV_SEL_TOPK segments only
+        sel = build(tuple(x[:C.LAV_SEL_TOPK] for x in lav))
     dens = Density().predict(F["feats"], F["verb"], F["noun"])
     _free()
     t["segcls"] = time.perf_counter() - t0
-    out = []
-    for a in acts:
-        s, e = max(0.0, a["segment"][0]), min(dur, a["segment"][1])
-        s, e = round(s, 2), round(e, 2)
-        if e > s:
-            out.append({"segment": [s, e], "verb": a["verb"], "noun": a["noun"],
-                        "score": round(min(max(a["score"], 0.0), 1.0), 6)})
-    return out, (dens, F["t_center"])
+    return out, (dens, F["t_center"]), sel
 
 
 def run(video: str, out: str, timings: dict | None = None) -> dict:
@@ -189,9 +196,9 @@ def run(video: str, out: str, timings: dict | None = None) -> dict:
         t0 = time.perf_counter()
         F = epic_features(video)
         t["slowfast"] = time.perf_counter() - t0
-        actions, dens = epic_actions(F, dur, t, video=video)
+        actions, dens, sel = epic_actions(F, dur, t, video=video)
         t0 = time.perf_counter()
-        segs = SC.select(actions, dur, SC.CovCfg(), density=dens) or H.uniform_segments(dur)
+        segs = SC.select(sel, dur, SC.CovCfg(), density=dens) or H.uniform_segments(dur)
     else:
         t0 = time.perf_counter()
         imp = sports.importance(frames, emb, ts, dur, text_pos, text_neg)
