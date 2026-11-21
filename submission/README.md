@@ -80,7 +80,8 @@ Weights are expected in `weights/` (override with `PRISM_WEIGHTS`):
 `SlowFast_model.pyth` (SlowFast-R50 EPIC-100, model state only), `actionformer/epic_slowfast_{verb,noun}_ema.pth.tar`
 (ActionFormer EPIC-100 EMA weights), `clip/open_clip_fp16.bin` (fp16 OpenCLIP ViT-L/14 DataComp), `epic_prior.npz`
 (P(noun|verb) from the EPIC-100 *train* annotations), `epic_segcls.pt` (segment classifier) and `epic_density.pt`
-(action-density model), both trained on the EPIC-100 *train* split.
+(action-density model), both trained on the EPIC-100 *train* split, and `lavila/tsf_l_ek100_vn_fp16.pth` (LaViLa
+TimeSformer-L, verb/noun heads, fp16). `weights/MD5SUMS.txt` lists checksums. Total ≈ 2 GB.
 
 Environment variables: `PRISM_TEAM_ID` (default `Opus 5.5 High`), `PRISM_WEIGHTS`, `PRISM_CACHE` (optional
 feature cache), `PRISM_FFMPEG` / `PRISM_FFPROBE` (if not on PATH), `PRISM_PYTHON` (interpreter for run.sh).
@@ -95,17 +96,21 @@ feature cache), `PRISM_FFMPEG` / `PRISM_FFPROBE` (if not on PATH), `PRISM_PYTHON
 
 ## 4. Results (our local re-implementation of the four metrics; approximate)
 
-Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **35.2**.
+Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **38.7**.
 
 | Metric (weight) | Uniform baseline | **Ours** |
 |---|---|---|
-| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **14.3** |
-| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **35.3** (upper bound with perfect actions: 61.0) |
+| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **20.4** |
+| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **40.3** (upper bound with perfect actions: 61.0) |
 | Highlight F1 vs top-15 % human frames (25 %) | 14.1 | **30.9** (human-vs-consensus: 37.6) |
-| Label accuracy (10 %) | — | **100** (48/48) |
+| Label accuracy (10 %) | — | **98.0** (48/49; the one miss is the private-video placeholder) |
 
-Latency on an RTX 4050 Laptop (6 GB): sports videos ≈ 0.1× real time, 1080p EPIC videos ≈ 0.4× real time
-(decode-bound). Per-stage timings are logged by `run.sh` to stderr.
+The LaViLa settings in `config.py` (number of segments, NMS, match tIoU and fusion weights) were picked on 21 EPIC
+validation videos. On the other 117 videos, which were not used for that choice, pair mAP rose from 18.2 to 21.1
+and coverage from 38.3 to 39.8 compared with the same pipeline without LaViLa.
+
+Latency on an RTX 4050 Laptop (6 GB): sports videos ≈ 0.1× real time, 1080p EPIC videos ≈ 0.7× real time
+(SlowFast decode ≈ 0.4×, LaViLa pass ≈ 0.3×). Per-stage timings are logged by `run.sh` to stderr.
 
 ## 5. Integrity
 

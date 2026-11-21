@@ -207,3 +207,9 @@ robustness, singleton-weighted density / actionness detector + soft pair members
   `export PATH="<ffmpeg bin>:$PATH"; C:/prism_env/Scripts/python.exe tools/run_all.py --out C:/prism_data/dev_outputs/final3/outputs >> C:/prism_data/dev_outputs/final3/run.log 2>&1`
   Then: placeholder → validate → score (report the 117 non-gate videos separately) → rename test → package v3.
 - Current safe package = v2 (37.28) in `C:\prism_submission\Opus 5.5 High\` (note: its code lacks singleton density; outputs are v2).
+## 2026-11-21 — v3 measured & packaged
+Full run `C:/prism_data/dev_outputs/final3` (187/187 valid, 0 failures): mAP **20.43** · Cov **40.25** · F1 30.88 · Label 97.96 → **WEIGHTED 38.72** (v2 37.28).
+- Held-out check (117 EPIC videos NOT used to pick LaViLa settings), v2 → v3: mAP 18.21→21.09, coverage 38.29→39.75. Gate-21: 30.49→36.15, 39.98→43.05.
+- Coverage variants: mid 40.25 / ov50 39.51 / any 50.08. LaViLa pass ≈0.28× real time → EPIC ≈0.7× real time total.
+- Package `C:\prism_submission\Opus 5.5 High\` rebuilt as v3 (2.0 GB, MD5SUMS), v2 kept in `..._v2`, v1 in `..._v1`. Static scan CLEAN.
+- Rename test from the v3 package with PRISM_CACHE="": P03_26 and BikePolo_5yf797Lh4Oc_1 IDENTICAL under random names and IDENTICAL to the full-run outputs.
