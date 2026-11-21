@@ -30,4 +30,5 @@ LAV_MATCH = 0.5       # a detection uses LaViLa's noun probs if it overlaps a cl
 LAV_W = 1.0           # weight of LaViLa noun probs vs segment-classifier noun probs (chosen on a 21-video val subset)
 LAV_ALT = 3           # extra actions: LaViLa top-k verbs x top-k nouns per classified segment
 LAV_ALT_W = 0.25      # their score = LAV_ALT_W * (p_verb * p_noun) ** 0.75
+MERGE_TIOU = 0.8      # same (verb, noun) predictions overlapping >= this are merged (noisy-or score); 2-fold CV
 

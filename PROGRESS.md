@@ -213,3 +213,15 @@ Full run `C:/prism_data/dev_outputs/final3` (187/187 valid, 0 failures): mAP **2
 - Coverage variants: mid 40.25 / ov50 39.51 / any 50.08. LaViLa pass ≈0.28× real time → EPIC ≈0.7× real time total.
 - Package `C:\prism_submission\Opus 5.5 High\` rebuilt as v3 (2.0 GB, MD5SUMS), v2 kept in `..._v2`, v1 in `..._v1`. Static scan CLEAN.
 - Rename test from the v3 package with PRISM_CACHE="": P03_26 and BikePolo_5yf797Lh4Oc_1 IDENTICAL under random names and IDENTICAL to the full-run outputs.
+## 2026-11-22 — v4 (goal: maximize; advisor Opus 5.5 high)
+Dev harness `tools/dev_v3.py` (memoised AF dets + cached SlowFast/LaViLa; same code path as run.sh). 2-fold CV, all 138.
+- KEPT: duplicate merge (same pair, tIoU ≥ 0.8, noisy-or, before the 2000 cap; `pairing.merge_duplicates`, `config.MERGE_TIOU`);
+  PairCfg w_det 0.4→0.3, w_seg 0.3→0.4.
+- REJECTED: CovCfg re-grid, ALT 5x5 selector list, LaViLa confidence on instance p, LAV_ALT_W/ALT/MATCH/LAV_W, noun_pow,
+  LAV_TOPK 250/300 (mAP +0.3 but coverage −0.4; caches extended to 300 by `tools/precompute_lav.py`, 200-seg backup in
+  `C:/prism_data/cache_lav200`), LaViLa alternative verbs on matched detections.
+- `pipeline.epic_lavila` cache now reuses a shared prefix of segments (incremental).
+Full run `C:/prism_data/dev_outputs/final4` (187/187 valid): mAP **21.84** · Cov **40.85** · F1 30.88 · Label 97.96 → **WEIGHTED 39.32** (v3 38.72).
+Held-out 117 (not used for LaViLa settings): mAP 22.47, cov 40.50 (v3 21.09 / 39.75). Static scan CLEAN; rename test (P26_30, cold)
+IDENTICAL; cold vs cached scores differ ≤ 3.4e-5 (LaViLa cache is fp16), segments/highlights identical.
+Package `C:\prism_submission\Opus 5.5 High\` = v4 (weights unchanged); v3 code+outputs in `..._v3_noweights`.

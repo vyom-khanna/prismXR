@@ -30,10 +30,11 @@ CLIP ViT-L/14 (DataComp-XL) zero-shot, prompt ensembles over 15 classes
   │     LaViLa TimeSformer-L (EPIC-100 train): 16 frames over each of the top-200 distinct verb
   │        segments → verb / noun probabilities (second 30 fps decode pass, only needed frames kept)
   │     Pairing: each verb segment × noun evidence
-  │        = 0.4 overlapping noun detections + 0.3 segment-classifier noun + 0.3 action head (noun | verb)
+  │        = 0.3 overlapping noun detections + 0.4 segment-classifier noun + 0.3 action head (noun | verb)
   │        (LaViLa's noun probs replace the segment-classifier noun term where a LaViLa segment overlaps)
   │        → top-8 (verb, noun) actions per segment, score = s_verb · p_noun^0.75
-  │        + LaViLa top-3 verbs × top-3 nouns per LaViLa segment at 0.25 weight      (≤ 2000 actions)
+  │        + LaViLa top-3 verbs × top-3 nouns per LaViLa segment at 0.25 weight
+        → same (verb, noun) predictions overlapping at tIoU ≥ 0.8 merged (noisy-or score)  (≤ 2000 actions)
   │     Action-density model (ours, EPIC-100 train): expected action midpoints per 0.53 s step
   │     Coverage-optimal highlights: greedy budgeted max-coverage of DISTINCT (verb, noun) pairs
   │        + 0.2 × expected #actions in the window, 4–5 s windows, fill to 14.9 %,
@@ -96,18 +97,19 @@ feature cache), `PRISM_FFMPEG` / `PRISM_FFPROBE` (if not on PATH), `PRISM_PYTHON
 
 ## 4. Results (our local re-implementation of the four metrics; approximate)
 
-Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **38.7**.
+Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **39.3**.
 
 | Metric (weight) | Uniform baseline | **Ours** |
 |---|---|---|
-| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **20.4** |
-| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **40.3** (upper bound with perfect actions: 61.0) |
+| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **21.8** |
+| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **40.9** (upper bound with perfect actions: 61.0) |
 | Highlight F1 vs top-15 % human frames (25 %) | 14.1 | **30.9** (human-vs-consensus: 37.6) |
 | Label accuracy (10 %) | — | **98.0** (48/49; the one miss is the private-video placeholder) |
 
 The LaViLa settings in `config.py` (number of segments, NMS, match tIoU and fusion weights) were picked on 21 EPIC
-validation videos. On the other 117 videos, which were not used for that choice, pair mAP rose from 18.2 to 21.1
-and coverage from 38.3 to 39.8 compared with the same pipeline without LaViLa.
+validation videos. On the other 117 videos, which were not used for that choice, pair mAP rose from 18.2 to 22.5
+and coverage from 38.3 to 40.5 compared with the same pipeline without LaViLa (all later changes were kept only when
+both participant-split folds improved).
 
 Latency on an RTX 4050 Laptop (6 GB): sports videos ≈ 0.1× real time, 1080p EPIC videos ≈ 0.7× real time
 (SlowFast decode ≈ 0.4×, LaViLa pass ≈ 0.3×). Per-stage timings are logged by `run.sh` to stderr.

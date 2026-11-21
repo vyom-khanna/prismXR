@@ -18,9 +18,9 @@ import numpy as np
 class PairCfg:
     top_verbs: int = 1500     # verb detections considered
     nouns_per_verb: int = 8   # nouns emitted per verb detection (2-fold CV: 1..15; >8 within noise)
-    w_det: float = 0.4        # weight of noun-detection evidence
+    w_det: float = 0.3        # weight of noun-detection evidence (2-fold CV with LaViLa: 0.4 -> 0.3)
     w_clip: float = 0.0       # weight of SlowFast clip-softmax noun evidence (used if no segment classifier)
-    w_seg: float = 0.3        # weight of segment-classifier noun head (prism/segcls.py)
+    w_seg: float = 0.4        # weight of segment-classifier noun head (LaViLa noun where matched)
     w_act: float = 0.3        # weight of segment-classifier action head, conditioned on the detected verb
     noun_pow: float = 0.75    # action score = verb_score * noun_evidence ** noun_pow
     prior_pow: float = 0.0    # exponent on P(noun|verb); 0 disables (CV: prior did not help)
@@ -103,3 +103,27 @@ def pair_actions(verb_dets, noun_dets, clip_noun, t_center, prior_n_given_v, ver
     acts.sort(key=lambda r: -r[0])
     acts = acts[: cfg.max_actions]
     return [{"segment": [s0, s1], "verb": v, "noun": n, "score": sc} for sc, s0, s1, v, n in acts]
+
+
+def merge_duplicates(acts: list[dict], thr: float = 0.8) -> list[dict]:
+    """Collapse predictions of the same (verb, noun) whose segments overlap at tIoU >= thr into one, keeping the
+    highest-scoring segment and a noisy-or score 1 - prod(1 - s). Avoids duplicate false positives in pair AP."""
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for a in acts:
+        groups[(a["verb"], a["noun"])].append(a)
+    out = []
+    for g in groups.values():
+        keep = []
+        for a in sorted(g, key=lambda a: -a["score"]):
+            s, e = a["segment"]
+            for b in keep:
+                x, y = b["segment"]
+                i = max(0.0, min(e, y) - max(s, x))
+                if i / max((e - s) + (y - x) - i, 1e-6) >= thr:
+                    b["score"] = 1 - (1 - b["score"]) * (1 - a["score"])
+                    break
+            else:
+                keep.append(dict(a))
+        out += keep
+    return out

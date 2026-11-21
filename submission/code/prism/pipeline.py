@@ -69,12 +69,19 @@ def epic_features(video: str) -> dict:
 
 def epic_lavila(video: str, segs: np.ndarray):
     cp = _cache_path(video, "lav")
+    have_v = have_n = None
     if cp and os.path.exists(cp):
         with np.load(cp) as z:
-            if len(z["segs"]) == len(segs) and np.allclose(z["segs"], segs, atol=0.05):
-                return z["v"].astype(np.float32), z["n"].astype(np.float32)
+            k = min(len(z["segs"]), len(segs))
+            if k and np.allclose(z["segs"][:k], segs[:k], atol=0.05):  # shared prefix (segments are in NMS order)
+                have_v, have_n = z["v"][:k].astype(np.float32), z["n"][:k].astype(np.float32)
+                if k == len(segs):
+                    return have_v, have_n
     from .lavila_cls import classify_segments
-    pv, pn = classify_segments(video, segs)
+    k = 0 if have_v is None else len(have_v)
+    pv, pn = classify_segments(video, segs[k:])
+    if k:
+        pv, pn = np.concatenate([have_v, pv]), np.concatenate([have_n, pn])
     _free()
     if cp:
         np.savez_compressed(cp, segs=segs, v=pv.astype(np.float16), n=pn.astype(np.float16))
@@ -132,7 +139,10 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
                 for b_ in np.argsort(-pn)[:C.LAV_ALT]:
                     acts.append({"segment": [float(s), float(e)], "verb": cls["verbs"][a_], "noun": cls["nouns"][b_],
                                  "score": C.LAV_ALT_W * float(pv[a_] * pn[b_]) ** 0.75})
-        acts = sorted(acts, key=lambda a: -a["score"])[:2000]
+    if C.MERGE_TIOU < 1:
+        from .pairing import merge_duplicates
+        acts = merge_duplicates(acts, C.MERGE_TIOU)
+    acts = sorted(acts, key=lambda a: -a["score"])[:2000]
     dens = Density().predict(F["feats"], F["verb"], F["noun"])
     _free()
     t["segcls"] = time.perf_counter() - t0
