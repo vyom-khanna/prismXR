@@ -250,3 +250,12 @@ mAP rises by up to +0.2 but coverage drops by 0.1–0.8 in every variant. Code r
 Search exhausted: only coverage and mAP can still move. Clearing CV noise (±0.3 weighted) would need about +0.75 coverage or +1.2 mAP.
 Every new candidate source lowered coverage, and every knob near the current settings has been mapped.
 The only idea left, a second ActionFormer seed ensemble, would need retraining (no second checkpoint exists) for an expected +0.1–0.2 weighted, which is below noise. v5 (39.40) is final.
+
+## ActionFormer seed ensemble (2026-11-22) — REJECTED
+Trained a second ActionFormer verb + noun seed on the EPIC train split (485/495 videos; 10 feature files missing from the
+partial download), official recipe via tools/train_af_seed.py (21 epochs, about 21 min each on the RTX 4050).
+Ensemble = average of per-point sigmoid probabilities and offsets before NMS (self-ensemble check: identical output).
+EPIC-weighted part, v5 = 21.89 (mAP 22.18, cov 40.85):
+- seed1 alone 21.26 (mAP 21.55, cov 39.68)
+- ensemble both 21.74 (mAP 22.29, cov 40.41) · verb only 21.72 · noun only 21.85 (fold 2 cov 41.37 < 41.66)
+As with TriDet: mAP up ≤0.1, coverage down. Ensemble code reverted. v5 (39.40) final; all advisor-listed ideas are now tested.
