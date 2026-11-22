@@ -11,7 +11,7 @@ import sys
 import numpy as np
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, os.path.join(ROOT, "submission", "code"))
+sys.path.insert(0, os.path.join(ROOT, "TIET_Opus5.5high", "code"))
 sys.path.insert(0, os.path.join(ROOT, "tools", "eval"))
 import score as S  # noqa: E402
 from prism import highlights as H, select_coverage as SC  # noqa: E402
@@ -21,7 +21,7 @@ FEAT = r"C:/prism_data/af_features/epic_kitchens/features"
 man = S.load_manifest(S.DEF_MANIFEST)
 verbs, nouns = S.load_class_keys(S.DEF_VERBS), S.load_class_keys(S.DEF_NOUNS)
 GT = S.load_epic_gt(S.DEF_EPIC_GT, verbs, nouns)
-cls = json.load(open(os.path.join(ROOT, "submission", "code", "prism", "supported_classes.json")))
+cls = json.load(open(os.path.join(ROOT, "TIET_Opus5.5high", "code", "prism", "supported_classes.json")))
 prior = np.load(r"C:/prism_data/weights/epic_prior.npz")["p_n_given_v"]
 z = np.load(r"C:/prism_data/dev_outputs/released_dets.npz")
 vids = sorted({k.split("|")[0] for k in z.files})

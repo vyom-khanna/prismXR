@@ -1,0 +1,72 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "RockClimbing_mDUcIkDzpVI",
+ "duration_sec": 377.01,
+ "label": {
+  "name": "rockclimbing",
+  "score": 0.9916
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    19.25,
+    23.26
+   ]
+  },
+  {
+   "segment": [
+    63.24,
+    67.26
+   ]
+  },
+  {
+   "segment": [
+    115.24,
+    119.26
+   ]
+  },
+  {
+   "segment": [
+    119.74,
+    127.76
+   ]
+  },
+  {
+   "segment": [
+    151.74,
+    155.76
+   ]
+  },
+  {
+   "segment": [
+    171.24,
+    175.26
+   ]
+  },
+  {
+   "segment": [
+    180.24,
+    196.26
+   ]
+  },
+  {
+   "segment": [
+    199.74,
+    203.76
+   ]
+  },
+  {
+   "segment": [
+    209.24,
+    213.26
+   ]
+  },
+  {
+   "segment": [
+    241.74,
+    245.76
+   ]
+  }
+ ]
+}

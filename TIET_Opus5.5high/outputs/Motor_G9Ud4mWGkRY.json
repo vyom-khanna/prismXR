@@ -1,0 +1,30 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Motor_G9Ud4mWGkRY",
+ "duration_sec": 144.24,
+ "label": {
+  "name": "motor",
+  "score": 0.9369
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    33.52,
+    37.98
+   ]
+  },
+  {
+   "segment": [
+    40.52,
+    52.98
+   ]
+  },
+  {
+   "segment": [
+    65.52,
+    69.98
+   ]
+  }
+ ]
+}

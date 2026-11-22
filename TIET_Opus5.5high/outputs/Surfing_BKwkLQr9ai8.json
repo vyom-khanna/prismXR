@@ -1,0 +1,30 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Surfing_BKwkLQr9ai8",
+ "duration_sec": 83.98,
+ "label": {
+  "name": "surfing",
+  "score": 0.9473
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    30.17,
+    34.33
+   ]
+  },
+  {
+   "segment": [
+    43.17,
+    47.33
+   ]
+  },
+  {
+   "segment": [
+    52.67,
+    56.83
+   ]
+  }
+ ]
+}

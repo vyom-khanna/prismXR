@@ -1,0 +1,60 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Bike_lhTFVa0h9Rk",
+ "duration_sec": 287.44,
+ "label": {
+  "name": "bike",
+  "score": 0.8212
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    7.58,
+    11.92
+   ]
+  },
+  {
+   "segment": [
+    61.08,
+    65.42
+   ]
+  },
+  {
+   "segment": [
+    81.58,
+    85.92
+   ]
+  },
+  {
+   "segment": [
+    105.08,
+    109.42
+   ]
+  },
+  {
+   "segment": [
+    141.08,
+    149.42
+   ]
+  },
+  {
+   "segment": [
+    155.08,
+    159.42
+   ]
+  },
+  {
+   "segment": [
+    163.08,
+    167.42
+   ]
+  },
+  {
+   "segment": [
+    177.58,
+    185.92
+   ]
+  }
+ ]
+}

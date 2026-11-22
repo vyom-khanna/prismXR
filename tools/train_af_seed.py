@@ -23,7 +23,7 @@ from prism.actionformer.modeling import make_meta_arch
 from prism.actionformer.modeling.blocks import AffineDropPath, LayerNorm, MaskedConv1D, Scale
 
 AF = r"C:/prism_data/af_features/epic_kitchens"
-CFG = os.path.join(os.path.dirname(__file__), "..", "submission", "code", "prism", "actionformer", "configs")
+CFG = os.path.join(os.path.dirname(__file__), "..", "TIET_Opus5.5high", "code", "prism", "actionformer", "configs")
 
 kind, seed = sys.argv[1], int(sys.argv[2])
 FT = len(sys.argv) > 3 and sys.argv[3] == "ft"

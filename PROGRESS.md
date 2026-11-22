@@ -317,3 +317,12 @@ Fold-A pick == fold-B pick. Rejected: W 0.4, source-aware cap key kappa 1.5-3.
 Final diagnosis (Fable, offline GT): coverage loss is mostly the 15 % budget (45 of 56.5 missed points are correctly
 predicted & placed but not selectable); remaining lever is action POSITIONS (GT positions -> 52.6), needs new signals.
 FROZEN. Honest unseen-video estimate (README disclosure): about 39.5-40.
+
+## 2026-11-22 — submission prep: TEAM_ID = TIET_Opus5.5high
+- `submission/` renamed to `TIET_Opus5.5high/` (TEAM_ID layout); default `PRISM_TEAM_ID` = `TIET_Opus5.5high`; tool paths updated.
+- `outputs/` (187 JSONs) added to git: v10 outputs with only `team_id` changed (checked field by field); validator 187/187.
+- Our 4 small weights committed; third-party checkpoints via `prepare_weights.py` (download + convert); conversion
+  from the original downloads reproduces all 5 files MD5-identical.
+- Integrity after rename: static scan CLEAN, rename test IDENTICAL (Surfing_7bzMGVKaiCQ).
+- Deck `TIET_Opus5.5high_Submission.pptx` built from the organiser template (Submission_Final_forGithub.pptx).
+- Local package: `C:\prism_submission\TIET_Opus5.5high\` (same content + full weights).

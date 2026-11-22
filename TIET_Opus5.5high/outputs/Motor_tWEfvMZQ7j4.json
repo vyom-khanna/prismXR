@@ -1,0 +1,54 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Motor_tWEfvMZQ7j4",
+ "duration_sec": 202.58,
+ "label": {
+  "name": "motor",
+  "score": 0.9928
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    75.6,
+    79.9
+   ]
+  },
+  {
+   "segment": [
+    81.1,
+    85.4
+   ]
+  },
+  {
+   "segment": [
+    94.6,
+    98.9
+   ]
+  },
+  {
+   "segment": [
+    110.6,
+    114.9
+   ]
+  },
+  {
+   "segment": [
+    127.6,
+    131.9
+   ]
+  },
+  {
+   "segment": [
+    155.1,
+    159.4
+   ]
+  },
+  {
+   "segment": [
+    180.1,
+    184.4
+   ]
+  }
+ ]
+}

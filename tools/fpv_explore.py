@@ -15,7 +15,7 @@ import scipy.io as sio
 from scipy.stats import spearmanr
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, os.path.join(ROOT, "submission", "code"))
+sys.path.insert(0, os.path.join(ROOT, "TIET_Opus5.5high", "code"))
 sys.path.insert(0, os.path.join(ROOT, "tools", "eval"))
 os.environ.setdefault("PRISM_WEIGHTS", r"C:/prism_data/weights")
 import score as S  # noqa: E402

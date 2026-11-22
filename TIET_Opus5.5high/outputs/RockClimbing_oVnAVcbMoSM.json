@@ -1,0 +1,30 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "RockClimbing_oVnAVcbMoSM",
+ "duration_sec": 83.5,
+ "label": {
+  "name": "rockclimbing",
+  "score": 0.8599
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    9.18,
+    13.32
+   ]
+  },
+  {
+   "segment": [
+    25.18,
+    29.32
+   ]
+  },
+  {
+   "segment": [
+    45.18,
+    49.32
+   ]
+  }
+ ]
+}

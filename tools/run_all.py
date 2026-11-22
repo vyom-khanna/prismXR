@@ -1,6 +1,6 @@
 """Run the submission pipeline over every manifest video that exists locally.
 
-    C:/prism_env/Scripts/python.exe tools/run_all.py --out submission/outputs [--only fpvsum|epic] [--limit N]
+    C:/prism_env/Scripts/python.exe tools/run_all.py --out TIET_Opus5.5high/outputs [--only fpvsum|epic] [--limit N]
 
 Writes <out>/<video_id>.json plus <out>/../timings.csv (per-stage seconds, for the latency report).
 Skips videos whose output already exists unless --force.
@@ -13,10 +13,10 @@ import time
 import traceback
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, os.path.join(ROOT, "submission", "code"))
+sys.path.insert(0, os.path.join(ROOT, "TIET_Opus5.5high", "code"))
 os.environ.setdefault("PRISM_WEIGHTS", r"C:/prism_data/weights")
 os.environ.setdefault("PRISM_CACHE", r"C:/prism_data/cache")
-os.environ.setdefault("PRISM_TEAM_ID", "Opus 5.5 High")
+os.environ.setdefault("PRISM_TEAM_ID", "TIET_Opus5.5high")
 
 from prism.pipeline import run  # noqa: E402
 
@@ -31,7 +31,7 @@ def video_path(vid, ds):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=os.path.join(ROOT, "submission", "outputs"))
+    ap.add_argument("--out", default=os.path.join(ROOT, "TIET_Opus5.5high", "outputs"))
     ap.add_argument("--only", choices=["fpvsum", "epic"])
     ap.add_argument("--ids", help="comma-separated video ids")
     ap.add_argument("--limit", type=int, default=0)

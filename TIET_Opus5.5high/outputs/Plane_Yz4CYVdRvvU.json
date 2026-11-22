@@ -1,0 +1,30 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Plane_Yz4CYVdRvvU",
+ "duration_sec": 111.34,
+ "label": {
+  "name": "plane",
+  "score": 0.7825
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    48.16,
+    56.34
+   ]
+  },
+  {
+   "segment": [
+    59.16,
+    63.34
+   ]
+  },
+  {
+   "segment": [
+    99.16,
+    103.34
+   ]
+  }
+ ]
+}

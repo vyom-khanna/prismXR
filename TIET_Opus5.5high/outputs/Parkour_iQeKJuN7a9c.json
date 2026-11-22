@@ -1,0 +1,36 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Parkour_iQeKJuN7a9c",
+ "duration_sec": 123.02,
+ "label": {
+  "name": "parkour",
+  "score": 0.9215
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    38.46,
+    43.04
+   ]
+  },
+  {
+   "segment": [
+    55.96,
+    60.54
+   ]
+  },
+  {
+   "segment": [
+    63.96,
+    68.54
+   ]
+  },
+  {
+   "segment": [
+    70.96,
+    75.54
+   ]
+  }
+ ]
+}

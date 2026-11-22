@@ -1,0 +1,30 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Skate_3h8GZNyLpoU",
+ "duration_sec": 136.39,
+ "label": {
+  "name": "skate",
+  "score": 0.9192
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    67.7,
+    71.8
+   ]
+  },
+  {
+   "segment": [
+    83.2,
+    95.3
+   ]
+  },
+  {
+   "segment": [
+    97.2,
+    101.3
+   ]
+  }
+ ]
+}

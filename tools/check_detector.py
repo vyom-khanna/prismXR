@@ -13,7 +13,7 @@ import sys
 import numpy as np
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, os.path.join(ROOT, "submission", "code"))
+sys.path.insert(0, os.path.join(ROOT, "TIET_Opus5.5high", "code"))
 os.environ.setdefault("PRISM_WEIGHTS", r"C:/prism_data/weights")
 
 from prism import config as C  # noqa: E402

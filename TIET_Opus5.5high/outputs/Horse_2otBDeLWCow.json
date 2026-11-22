@@ -1,0 +1,36 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Horse_2otBDeLWCow",
+ "duration_sec": 248.18,
+ "label": {
+  "name": "horse",
+  "score": 0.9589
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    8.65,
+    16.85
+   ]
+  },
+  {
+   "segment": [
+    34.15,
+    38.35
+   ]
+  },
+  {
+   "segment": [
+    162.15,
+    178.35
+   ]
+  },
+  {
+   "segment": [
+    181.15,
+    189.35
+   ]
+  }
+ ]
+}

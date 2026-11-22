@@ -1,0 +1,60 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Horse_PEekyTcA8FU",
+ "duration_sec": 229.08,
+ "label": {
+  "name": "horse",
+  "score": 0.9925
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    57.12,
+    61.38
+   ]
+  },
+  {
+   "segment": [
+    92.12,
+    96.38
+   ]
+  },
+  {
+   "segment": [
+    119.62,
+    123.88
+   ]
+  },
+  {
+   "segment": [
+    126.62,
+    130.88
+   ]
+  },
+  {
+   "segment": [
+    140.12,
+    144.38
+   ]
+  },
+  {
+   "segment": [
+    160.62,
+    164.88
+   ]
+  },
+  {
+   "segment": [
+    187.62,
+    191.88
+   ]
+  },
+  {
+   "segment": [
+    196.12,
+    200.38
+   ]
+  }
+ ]
+}

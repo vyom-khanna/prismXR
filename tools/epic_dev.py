@@ -14,7 +14,7 @@ import sys
 import numpy as np
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, os.path.join(ROOT, "submission", "code"))
+sys.path.insert(0, os.path.join(ROOT, "TIET_Opus5.5high", "code"))
 sys.path.insert(0, os.path.join(ROOT, "tools", "eval"))
 os.environ.setdefault("PRISM_WEIGHTS", r"C:/prism_data/weights")
 import score as S  # noqa: E402
@@ -27,7 +27,7 @@ MAN = S.load_manifest(S.DEF_MANIFEST)
 EPIC = sorted(v for v, (d, ds) in MAN.items() if ds == "epic_kitchens_100")
 VERBS, NOUNS = S.load_class_keys(S.DEF_VERBS), S.load_class_keys(S.DEF_NOUNS)
 GT = S.load_epic_gt(S.DEF_EPIC_GT, VERBS, NOUNS)
-CLS = json.load(open(os.path.join(ROOT, "submission", "code", "prism", "supported_classes.json")))
+CLS = json.load(open(os.path.join(ROOT, "TIET_Opus5.5high", "code", "prism", "supported_classes.json")))
 PRIOR = np.load(r"C:/prism_data/weights/epic_prior.npz")["p_n_given_v"]
 _parts = sorted({v.split("_")[0] for v in EPIC})
 _A = {v for v in EPIC if _parts.index(v.split("_")[0]) % 2 == 0}

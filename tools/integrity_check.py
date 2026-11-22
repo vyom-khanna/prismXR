@@ -17,7 +17,7 @@ import tempfile
 import uuid
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-SUB = os.path.join(ROOT, "submission")
+SUB = os.path.join(ROOT, "TIET_Opus5.5high")
 MANIFEST = os.path.join(ROOT, "Student package_track04", "Student package_track04", "manifest.csv")
 FORBIDDEN = ["EPIC_100_validation", "EPIC_100_train", "gt_data", "raw_data.mat", "prism_ext", "prism_data",
              "manifest.csv", "FPVSum_videolist", "dev_outputs"]

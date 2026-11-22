@@ -1,0 +1,36 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "BikePolo_DHbYfmjX3WQ_3",
+ "duration_sec": 169.62,
+ "label": {
+  "name": "bikepolo",
+  "score": 0.7691
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    69.1,
+    73.4
+   ]
+  },
+  {
+   "segment": [
+    74.1,
+    82.4
+   ]
+  },
+  {
+   "segment": [
+    102.1,
+    110.4
+   ]
+  },
+  {
+   "segment": [
+    110.6,
+    114.9
+   ]
+  }
+ ]
+}

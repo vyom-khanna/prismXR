@@ -1,0 +1,30 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Ski_5SH1-SAkYe0",
+ "duration_sec": 119.57,
+ "label": {
+  "name": "ski",
+  "score": 0.9693
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    70.46,
+    75.04
+   ]
+  },
+  {
+   "segment": [
+    75.96,
+    84.54
+   ]
+  },
+  {
+   "segment": [
+    98.46,
+    103.04
+   ]
+  }
+ ]
+}

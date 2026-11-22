@@ -1,0 +1,18 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Skate_el49s-RlIa4",
+ "duration_sec": 37.24,
+ "label": {
+  "name": "skate",
+  "score": 0.7794
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    31.89,
+    37.23
+   ]
+  }
+ ]
+}

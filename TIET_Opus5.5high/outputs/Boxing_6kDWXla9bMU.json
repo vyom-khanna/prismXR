@@ -1,0 +1,78 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Boxing_6kDWXla9bMU",
+ "duration_sec": 345.35,
+ "label": {
+  "name": "boxing",
+  "score": 0.9735
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    19.1,
+    23.4
+   ]
+  },
+  {
+   "segment": [
+    54.6,
+    58.9
+   ]
+  },
+  {
+   "segment": [
+    66.6,
+    70.9
+   ]
+  },
+  {
+   "segment": [
+    155.6,
+    159.9
+   ]
+  },
+  {
+   "segment": [
+    167.1,
+    171.4
+   ]
+  },
+  {
+   "segment": [
+    173.6,
+    181.9
+   ]
+  },
+  {
+   "segment": [
+    185.1,
+    189.4
+   ]
+  },
+  {
+   "segment": [
+    212.6,
+    216.9
+   ]
+  },
+  {
+   "segment": [
+    229.1,
+    233.4
+   ]
+  },
+  {
+   "segment": [
+    268.6,
+    272.9
+   ]
+  },
+  {
+   "segment": [
+    286.6,
+    290.9
+   ]
+  }
+ ]
+}

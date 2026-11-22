@@ -15,7 +15,7 @@ import numpy as np
 import torch
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, os.path.join(ROOT, "submission", "code"))
+sys.path.insert(0, os.path.join(ROOT, "TIET_Opus5.5high", "code"))
 from prism.density import DensityNet, make_input  # noqa: E402
 
 FEAT = r"C:/prism_data/af_features/epic_kitchens/features"

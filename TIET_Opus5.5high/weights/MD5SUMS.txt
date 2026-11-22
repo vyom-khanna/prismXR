@@ -1,0 +1,9 @@
+b3648938b2067ff19b633c60dc67269d *./SlowFast_model.pyth
+40098fa5092f52cfc6f1c518173811e4 *./actionformer/epic_slowfast_noun_ema.pth.tar
+c2fe6b79364a43381cf0a376843d4c72 *./actionformer/epic_slowfast_verb_ema.pth.tar
+bfb60f744a4cd5bb13df349232790401 *./clip/open_clip_fp16.bin
+1e9c6e267363e57a99f650172126bcf6 *./epic_density.pt
+65e08c2cbf89ddb7bd97fcf35a1839c5 *./epic_prior.npz
+04718af7b02cfa699e81a37c7621e26c *./epic_segcls.pt
+60189237fc289b088fe32e74b3a7f9d0 *./lavila/tsf_l_ek100_vn_fp16.pth
+36a58415dd1eb67c695dcdd818312a60 *./epic_nounctx.npz

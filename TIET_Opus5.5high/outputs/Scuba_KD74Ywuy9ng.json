@@ -1,0 +1,54 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Scuba_KD74Ywuy9ng",
+ "duration_sec": 264.69,
+ "label": {
+  "name": "other",
+  "score": 0.0
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    16.41,
+    21.4
+   ]
+  },
+  {
+   "segment": [
+    54.22,
+    59.21
+   ]
+  },
+  {
+   "segment": [
+    92.04,
+    97.03
+   ]
+  },
+  {
+   "segment": [
+    129.85,
+    134.84
+   ]
+  },
+  {
+   "segment": [
+    167.66,
+    172.65
+   ]
+  },
+  {
+   "segment": [
+    205.48,
+    210.47
+   ]
+  },
+  {
+   "segment": [
+    243.29,
+    248.28
+   ]
+  }
+ ]
+}

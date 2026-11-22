@@ -1,0 +1,30 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Boxing_mDOxBVYvDCU",
+ "duration_sec": 134.94,
+ "label": {
+  "name": "boxing",
+  "score": 0.9517
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    60.74,
+    72.76
+   ]
+  },
+  {
+   "segment": [
+    73.74,
+    77.76
+   ]
+  },
+  {
+   "segment": [
+    125.74,
+    129.76
+   ]
+  }
+ ]
+}

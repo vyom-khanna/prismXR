@@ -1,0 +1,36 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Bike_x76VEPXYaI0",
+ "duration_sec": 123.16,
+ "label": {
+  "name": "bike",
+  "score": 0.7425
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    37.96,
+    42.54
+   ]
+  },
+  {
+   "segment": [
+    56.46,
+    61.04
+   ]
+  },
+  {
+   "segment": [
+    68.46,
+    73.04
+   ]
+  },
+  {
+   "segment": [
+    82.46,
+    87.04
+   ]
+  }
+ ]
+}

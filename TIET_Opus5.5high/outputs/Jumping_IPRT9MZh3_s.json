@@ -1,0 +1,42 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Jumping_IPRT9MZh3_s",
+ "duration_sec": 175.74,
+ "label": {
+  "name": "jumping",
+  "score": 0.8007
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    83.04,
+    87.46
+   ]
+  },
+  {
+   "segment": [
+    110.04,
+    114.46
+   ]
+  },
+  {
+   "segment": [
+    115.54,
+    123.96
+   ]
+  },
+  {
+   "segment": [
+    127.04,
+    131.46
+   ]
+  },
+  {
+   "segment": [
+    133.04,
+    137.46
+   ]
+  }
+ ]
+}

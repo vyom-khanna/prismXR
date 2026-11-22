@@ -1,0 +1,60 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Longboarding_Jec5YAjth6M",
+ "duration_sec": 247.81,
+ "label": {
+  "name": "longboarding",
+  "score": 0.624
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    2.7,
+    10.8
+   ]
+  },
+  {
+   "segment": [
+    56.7,
+    60.8
+   ]
+  },
+  {
+   "segment": [
+    86.7,
+    90.8
+   ]
+  },
+  {
+   "segment": [
+    107.7,
+    111.8
+   ]
+  },
+  {
+   "segment": [
+    153.2,
+    157.3
+   ]
+  },
+  {
+   "segment": [
+    159.7,
+    163.8
+   ]
+  },
+  {
+   "segment": [
+    171.2,
+    175.3
+   ]
+  },
+  {
+   "segment": [
+    243.76,
+    247.81
+   ]
+  }
+ ]
+}

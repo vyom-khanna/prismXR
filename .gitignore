@@ -6,5 +6,12 @@ __pycache__/
 *.ckpt
 *.MP4
 *.mp4
-submission/weights/
+TIET_Opus5.5high/weights/*
+!TIET_Opus5.5high/weights/epic_density.pt
+!TIET_Opus5.5high/weights/epic_segcls.pt
+!TIET_Opus5.5high/weights/epic_prior.npz
+!TIET_Opus5.5high/weights/epic_nounctx.npz
+!TIET_Opus5.5high/weights/MD5SUMS.txt
 .vscode/
+XR_Hackathon_2026_Consolidated_Slides_V3-2.pptx
+Submission_Final_forGithub.pptx

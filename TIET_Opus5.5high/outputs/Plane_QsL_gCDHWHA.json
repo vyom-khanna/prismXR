@@ -1,0 +1,54 @@
+{
+ "team_id": "TIET_Opus5.5high",
+ "video_id": "Plane_QsL_gCDHWHA",
+ "duration_sec": 205.47,
+ "label": {
+  "name": "plane",
+  "score": 0.7632
+ },
+ "actions": [],
+ "highlights": [
+  {
+   "segment": [
+    59.57,
+    63.93
+   ]
+  },
+  {
+   "segment": [
+    71.07,
+    75.43
+   ]
+  },
+  {
+   "segment": [
+    88.07,
+    92.43
+   ]
+  },
+  {
+   "segment": [
+    98.07,
+    102.43
+   ]
+  },
+  {
+   "segment": [
+    124.57,
+    128.93
+   ]
+  },
+  {
+   "segment": [
+    132.07,
+    136.43
+   ]
+  },
+  {
+   "segment": [
+    142.07,
+    146.43
+   ]
+  }
+ ]
+}

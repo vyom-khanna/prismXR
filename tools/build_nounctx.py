@@ -4,7 +4,7 @@ from collections import defaultdict
 import numpy as np
 
 TRAIN = r"C:/prism_ext/epic-kitchens-100-annotations/EPIC_100_train.csv"
-CLS = json.load(open(r"C:/Users/vyomk/OneDrive/Desktop/prismXR/submission/code/prism/supported_classes.json"))
+CLS = json.load(open(r"C:/Users/vyomk/OneDrive/Desktop/prismXR/TIET_Opus5.5high/code/prism/supported_classes.json"))
 
 
 def ts(s):
