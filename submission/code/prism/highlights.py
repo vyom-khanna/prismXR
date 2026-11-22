@@ -25,8 +25,9 @@ def _round_up(x):
 
 def finalize(segs: list[tuple[float, float]], dur: float, fallback_center: float | None = None):
     """Clean a list of (start, end) into a valid highlight list of {"segment": [s, e]}."""
-    # 4.01 s, not 4.00: after 2-decimal rounding, e.g. 4.22 - 0.22 == 3.9999999999999996 < 4.0 in float.
-    min_len = min(C.MIN_SEG + 0.01, dur)
+    # > 4.00 s: after 2-decimal rounding, e.g. 4.22 - 0.22 == 3.9999999999999996 < 4.0 in float, and a 4.01 s window
+    # around an x.xx5 centre rounds inward to exactly 4.00 s.
+    min_len = min(C.MIN_SEG + C.MIN_LEN_PAD, dur)
     out = []
     for s, e in sorted(segs):
         s, e = max(0.0, float(s)), min(dur, float(e))

@@ -37,12 +37,15 @@ def select(actions: list[dict], dur: float, cfg: CovCfg = CovCfg(), budget: floa
            density: tuple | None = None):
     """density: optional (rate [T], t_center [T]) from prism.density (expected action midpoints per step)."""
     budget = C.TARGET_FILL * dur if budget is None else budget
-    if budget < C.MIN_SEG or not actions:
-        if not actions:
-            return []
-        a = max(actions, key=lambda x: x["score"])
-        c = sum(a["segment"]) / 2
-        return [(c - C.MIN_SEG / 2, c + C.MIN_SEG / 2)]
+    if not actions:
+        return []
+    if budget < C.MIN_SEG:
+        if C.SHORT_GREEDY:  # too short for 15%: one MIN_SEG window, still placed by the coverage greedy
+            budget = C.MIN_SEG + 0.01
+        else:
+            a = max(actions, key=lambda x: x["score"])
+            c = sum(a["segment"]) / 2
+            return [(c - C.MIN_SEG / 2, c + C.MIN_SEG / 2)]
 
     acts = sorted(actions, key=lambda x: -x["score"])[: cfg.max_instances]
     mids = np.array([(a["segment"][0] + a["segment"][1]) / 2 for a in acts])

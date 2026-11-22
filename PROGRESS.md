@@ -259,3 +259,13 @@ EPIC-weighted part, v5 = 21.89 (mAP 22.18, cov 40.85):
 - seed1 alone 21.26 (mAP 21.55, cov 39.68)
 - ensemble both 21.74 (mAP 22.29, cov 40.41) · verb only 21.72 · noun only 21.85 (fold 2 cov 41.37 < 41.66)
 As with TriDet: mAP up ≤0.1, coverage down. Ensemble code reverted. v5 (39.40) final; all advisor-listed ideas are now tested.
+
+## v6 (2026-11-22) — Fable code review fixes: 39.67 (full run, 187/187 valid)
+Review (Fable) found 5 items; all-on + leave-one-out on 2-fold CV:
+- #1 sports highlights widened to spend leftover budget (same rule as EPIC; no fitting): F1 30.88 -> 31.64
+- #2 very short videos: single window placed by the coverage greedy (was: centred on top action)
+- #4 finalize min window 4.02 s (4.01 s could round to exactly 4.00 s)
+- #5 pairing keeps 12000 candidates so the 2000 cap applies after the merge — output actions only
+  (applied to highlight selection too it cost fold-2 coverage)
+- #3 TARGET_FILL 0.1495: REJECTED (−0.07)
+Final: mAP 22.36 [29.55 24.10], coverage 40.95 [39.68 41.66], F1 31.64, label 97.96 -> WEIGHTED 39.67 (v5 39.40).

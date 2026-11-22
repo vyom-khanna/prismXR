@@ -35,7 +35,8 @@ CLIP ViT-L/14 (DataComp-XL) zero-shot, prompt ensembles over 15 classes
   │        → top-8 (verb, noun) actions per segment, score = s_verb · p_noun^0.75
   │        + LaViLa top-3 verbs × top-3 nouns per LaViLa segment at 0.25 weight
         → same (verb, noun) predictions overlapping at tIoU ≥ 0.8 merged (noisy-or score)  (≤ 2000 actions)
-        (highlight selection uses the same actions built from the top-200 LaViLa segments only)
+        (pairing keeps up to 12000 candidates before the merge, so the 2000 cap applies after it; highlight
+        selection uses actions built from the top-200 LaViLa segments and 2000 candidates)
   │     Action-density model (ours, EPIC-100 train): expected action midpoints per 0.53 s step
   │     Coverage-optimal highlights: greedy budgeted max-coverage of DISTINCT (verb, noun) pairs
   │        + 0.2 × expected #actions in the window, 4–5 s windows, fill to 14.9 %,
@@ -45,9 +46,10 @@ CLIP ViT-L/14 (DataComp-XL) zero-shot, prompt ensembles over 15 classes
         2 fps frames → per-frame importance = ridge combination of motion (multi-scale frame
         difference), CLIP scene change, CLIP "exciting vs boring" prompt score, contrast,
         brightness, temporal-centre prior, local uniqueness
-        → greedy non-overlapping 4 s peak windows up to 14.9 %
+        → greedy non-overlapping 4 s peak windows, then widened to use the leftover budget (14.9 %)
   ▼
-finalize (sorted, non-overlapping, every window ≥ 4.0 s, ≤ 15 %) → validate → out.json
+finalize (sorted, non-overlapping, every window ≥ 4.02 s so 0.01 s rounding never leaves exactly 4.00 s, ≤ 15 %)
+  (videos too short for a 4 s window inside 15 % get one window, still placed by the coverage selection) → validate → out.json
 ```
 
 Models are loaded one at a time; peak GPU memory ≈ 1.6 GB (fits a 6 GB laptop GPU).
@@ -98,13 +100,13 @@ feature cache), `PRISM_FFMPEG` / `PRISM_FFPROBE` (if not on PATH), `PRISM_PYTHON
 
 ## 4. Results (our local re-implementation of the four metrics; approximate)
 
-Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **39.4**.
+Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **39.7**.
 
 | Metric (weight) | Uniform baseline | **Ours** |
 |---|---|---|
-| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **22.2** |
-| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **40.9** (upper bound with perfect actions: 61.0) |
-| Highlight F1 vs top-15 % human frames (25 %) | 14.1 | **30.9** (human-vs-consensus: 37.6) |
+| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **22.4** |
+| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **41.0** (upper bound with perfect actions: 61.0) |
+| Highlight F1 vs top-15 % human frames (25 %) | 14.1 | **31.6** (human-vs-consensus: 37.6) |
 | Label accuracy (10 %) | — | **98.0** (48/49; the one miss is the private-video placeholder) |
 
 The LaViLa settings in `config.py` (number of segments, NMS, match tIoU and fusion weights) were picked on 21 EPIC

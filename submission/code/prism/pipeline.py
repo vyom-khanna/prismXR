@@ -9,6 +9,7 @@ Models are loaded one at a time (6 GB GPU). The file name is only used to fill `
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import gc
 import json
 import os
@@ -116,7 +117,7 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
         lav = (lsegs,) + epic_lavila(video, lsegs)
         t["lavila"] = time.perf_counter() - t0
 
-    def build(lav):
+    def build(lav, pmax):
         sc = SegCls()
         pairs = sc.pairs.numpy() if hasattr(sc.pairs, "numpy") else np.asarray(sc.pairs)
 
@@ -130,7 +131,7 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
             return pv, pn, pa, pairs
 
         acts = pair_actions(det["verb"], det["noun"], F["noun"], F["t_center"], prior,
-                            cls["verbs"], cls["nouns"], PairCfg(), seg_model=seg_model)
+                            cls["verbs"], cls["nouns"], dataclasses.replace(PairCfg(), max_actions=pmax), seg_model=seg_model)
         del sc
         if lav is not None and C.LAV_ALT > 0:
             for k, (s, e) in enumerate(lav[0]):
@@ -153,10 +154,9 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
         return out
 
     t0 = time.perf_counter()
-    out = build(lav)
-    sel = out
-    if lav is not None and len(lav[0]) > C.LAV_SEL_TOPK:  # highlight selection uses the top LAV_SEL_TOPK segments only
-        sel = build(tuple(x[:C.LAV_SEL_TOPK] for x in lav))
+    out = build(lav, C.PAIR_MAX)
+    # highlight selection: top LAV_SEL_TOPK LaViLa segments and 2000 pairing candidates
+    sel = build(None if lav is None else tuple(x[:C.LAV_SEL_TOPK] for x in lav), 2000)
     dens = Density().predict(F["feats"], F["verb"], F["noun"])
     _free()
     t["segcls"] = time.perf_counter() - t0
@@ -203,6 +203,11 @@ def run(video: str, out: str, timings: dict | None = None) -> dict:
         t0 = time.perf_counter()
         imp = sports.importance(frames, emb, ts, dur, text_pos, text_neg)
         segs = H.peaks_to_segments(imp, ts, dur, seg_len=sports.SEG_LEN)
+        if C.SPORTS_WIDEN and segs:
+            from .select_coverage import _widen
+            left = H.budget_seconds(dur) - sum(e - s for s, e in segs)
+            if left > 0.05:
+                segs = _widen(sorted(segs), dur, left)
     hls = H.finalize(segs, dur)
     t["select"] = time.perf_counter() - t0
 

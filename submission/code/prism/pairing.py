@@ -13,6 +13,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from . import config as C
+
 
 @dataclass
 class PairCfg:
@@ -25,7 +27,7 @@ class PairCfg:
     noun_pow: float = 0.75    # action score = verb_score * noun_evidence ** noun_pow
     prior_pow: float = 0.0    # exponent on P(noun|verb); 0 disables (CV: prior did not help)
     min_tiou: float = 0.1     # noun det must overlap the verb det at least this much
-    max_actions: int = 2000
+    max_actions: int = 0       # 0 -> config.PAIR_MAX (final 2000 cap is in pipeline, after the duplicate merge)
 
 
 def _tiou_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -101,7 +103,7 @@ def pair_actions(verb_dets, noun_dets, clip_noun, t_center, prior_n_given_v, ver
                 continue
             acts.append((s, float(vs[i, 0]), float(vs[i, 1]), verbs[vl[i]], nouns[n]))
     acts.sort(key=lambda r: -r[0])
-    acts = acts[: cfg.max_actions]
+    acts = acts[: cfg.max_actions or C.PAIR_MAX]
     return [{"segment": [s0, s1], "verb": v, "noun": n, "score": sc} for sc, s0, s1, v, n in acts]
 
 
