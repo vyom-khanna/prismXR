@@ -135,7 +135,10 @@ are relatively slower — a 174 s video takes 174 s). Per-stage timings are logg
 
 All learned models are trained only on EPIC-100 **train** data or are public pretrained checkpoints, and the
 inference code never reads any annotation file or video id. During development we did use the annotations of the
-manifest videos to choose a small number of settings: the 11 FPVSum ridge weights (fitted on FPVSum importance
-curves) and a handful of EPIC hyper-parameters (selected by participant-split 2-fold CV on EPIC val). The
-held-out estimates above (FPVSum leave-one-category-out F1 ≈ 0.30; EPIC numbers on the fold not used for each
-choice) are the fairest indication of performance on unseen videos.
+manifest videos to choose settings and design choices: the 11 FPVSum ridge weights (fitted on FPVSum importance
+curves), and the EPIC hyper-parameters and post-processing steps (noun-context rescoring, cap-aware survivor
+ranking, coverage local search and its settings), each kept only if it improved both halves of a participant-split
+2-fold CV on EPIC val. Offline error analysis also used the EPIC val annotations. Because many variants were
+compared on these videos, the local numbers in section 4 are somewhat optimistic: FPVSum leave-one-category-out
+F1 is ≈ 0.30 (vs 0.316 in-sample), and we estimate the weighted total on unseen videos at roughly 39.5–40
+(local: 40.3).
