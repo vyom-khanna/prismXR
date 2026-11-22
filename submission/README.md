@@ -66,8 +66,8 @@ Models are loaded one at a time; peak GPU memory ≈ 1.6 GB (fits a 6 GB laptop 
 | Segment classifier (`epic_segcls.pt`, 43 MB) | trained by us on EPIC-100 **train** annotations + ActionFormer's released train-split SlowFast features (`tools/train_segcls.py`) |
 | Noun co-occurrence matrix (`epic_nounctx.npz`, 0.4 MB) | counted by us from EPIC-100 **train** annotations (`tools/build_nounctx.py`) |
 | Action-density model (`epic_density.pt`, 7 MB) | trained by us on the same EPIC-100 **train** data (`tools/train_density.py`) |
-| Sports importance weights | 11 ridge coefficients, validated with leave-one-category-out CV |
-| Pairing / coverage hyper-parameters | a handful of weights chosen by 2-fold cross-validation on EPIC val, split by participant; kept only when both folds improve |
+| Sports importance weights | 11 ridge coefficients **fitted on the FPVSum human importance curves** of the manifest videos (ridge, λ = 100; `tools/fpv_explore.py`). Leave-one-category-out CV (each sport scored with weights fitted without it) gives F1 ≈ 0.30, our honest estimate of generalisation (vs 0.316 in-sample); random 0.12 |
+| Pairing / coverage hyper-parameters | a handful of scalar settings (fusion weights, LaViLa top-k/NMS, selection settings, noun-context σ/γ) **chosen on the EPIC-100 validation videos of the manifest** by 2-fold cross-validation split by participant; kept only when both held-out folds improve. No model weights are trained on validation data |
 
 Vendored code (license files kept): SlowFast model definition from epic-kitchens-SlowFast
 (`code/prism/slowfast/`, CC BY-NC-SA 4.0), ActionFormer model (`code/prism/actionformer/`, MIT), LaViLa TimeSformer (`code/prism/lavila/`, MIT). ActionFormer's C++ NMS was ported to pure
@@ -127,3 +127,12 @@ are relatively slower — a 174 s video takes 174 s). Per-stage timings are logg
 - The pipeline only reads the video. The file name is used **only** to fill the required `video_id`.
 - No ground truth, video-ID lookups or per-video constants appear anywhere in `code/`.
 - Deterministic: the same video gives the same JSON.
+
+### Disclosure: use of evaluation annotations during development
+
+All learned models are trained only on EPIC-100 **train** data or are public pretrained checkpoints, and the
+inference code never reads any annotation file or video id. During development we did use the annotations of the
+manifest videos to choose a small number of settings: the 11 FPVSum ridge weights (fitted on FPVSum importance
+curves) and a handful of EPIC hyper-parameters (selected by participant-split 2-fold CV on EPIC val). The
+held-out estimates above (FPVSum leave-one-category-out F1 ≈ 0.30; EPIC numbers on the fold not used for each
+choice) are the fairest indication of performance on unseen videos.
