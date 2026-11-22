@@ -245,3 +245,8 @@ EPIC-weighted part (0.25 mAP + 0.4 cov), v5 = 21.89 (mAP 22.18, cov 40.85):
 - union AF+TD (both / verb / noun): 21.72 / 21.65 / 21.79
 - AF segments rescored with matched TD score (w .3 both / .5 both / .3 verb / .3 noun): 21.67 / 21.64 / 21.73 / 21.84
 mAP rises by up to +0.2 but coverage drops by 0.1–0.8 in every variant. Code removed; v5 remains final.
+
+## Advisor sign-off (Opus, high effort, 2026-11-22)
+Search exhausted: only coverage and mAP can still move. Clearing CV noise (±0.3 weighted) would need about +0.75 coverage or +1.2 mAP.
+Every new candidate source lowered coverage, and every knob near the current settings has been mapped.
+The only idea left, a second ActionFormer seed ensemble, would need retraining (no second checkpoint exists) for an expected +0.1–0.2 weighted, which is below noise. v5 (39.40) is final.
