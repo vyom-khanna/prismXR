@@ -31,6 +31,10 @@ class CovCfg:
     dens_w: float = 1.2         # + dens_w * (expected #actions in window, from the density model)
     margin: float = 0.0         # instance counts as covered only if its midpoint is >= margin inside the window
     dens_smooth: int = 5        # density smoothing (feature steps) before reading it at instance midpoints
+    local_search: bool = C.SEL_LOCAL_SEARCH  # after the greedy: move/resize/swap windows while the objective rises
+    ls_lengths: tuple = (4.0, 4.5, 5.0)  # window lengths the local search may use
+    ls_exact: int = 20          # per window, re-evaluate the top-k replacement candidates on the exact objective
+    ls_passes: int = 10
 
 
 def select(actions: list[dict], dur: float, cfg: CovCfg = CovCfg(), budget: float | None = None,
@@ -104,6 +108,10 @@ def select(actions: list[dict], dur: float, cfg: CovCfg = CovCfg(), budget: floa
         covered[inside] = True
         alive &= (cands[:, 1] <= s) | (cands[:, 0] >= e)   # no overlap (touching allowed)
 
+    if cfg.local_search and chosen:
+        chosen = _local_search(chosen, mids, p, pid, len(pair_ids), dur, budget, cfg,
+                               (lam, tc) if use_d and cfg.dens_w else None)
+        used = sum(e - s for s, e in chosen)
     if cfg.fill_rest and used + C.MIN_SEG <= budget:
         extra = _fill(chosen, dur, budget - used)
         chosen += extra
@@ -111,6 +119,68 @@ def select(actions: list[dict], dur: float, cfg: CovCfg = CovCfg(), budget: floa
     if cfg.widen and chosen and budget - used > 0.05:
         chosen = _widen(sorted(chosen), dur, budget - used)
     return chosen
+
+
+def _local_search(W, mids, p, pid, npairs, dur, budget, cfg, dens):
+    """Improve the greedy windows on the same objective, E[distinct pairs] + dens_w * density mass: for each window in
+    turn, find the best replacement (any position, length in ls_lengths, no overlap, within budget) given the other
+    windows, and accept it if the exact objective strictly rises. Repeat until no window moves."""
+    cands = []
+    for L in cfg.ls_lengths:
+        if L <= dur:
+            st = np.arange(0.0, dur - L + 1e-9, cfg.step)
+            cands.append(np.stack([st, st + L], 1))
+    if not cands:
+        return W
+    cands = np.concatenate(cands)
+    lo = np.searchsorted(mids, cands[:, 0], "left")
+    hi = np.searchsorted(mids, cands[:, 1], "right")
+    length = cands[:, 1] - cands[:, 0]
+    dcs = None
+    if dens is not None:
+        lam, tc = dens
+        dcs = np.concatenate([[0.0], np.cumsum(lam)])
+        dg = cfg.dens_w * (dcs[np.searchsorted(tc, cands[:, 1], "right")] - dcs[np.searchsorted(tc, cands[:, 0], "left")])
+    else:
+        dg = np.zeros(len(cands))
+
+    def state(ws):
+        cov = np.zeros(len(mids), bool)
+        dm = 0.0
+        for s, e in ws:
+            cov[np.searchsorted(mids, s, "left"):np.searchsorted(mids, e, "right")] = True
+            if dcs is not None:
+                dm += cfg.dens_w * (dcs[np.searchsorted(tc, e, "right")] - dcs[np.searchsorted(tc, s, "left")])
+        r = np.ones(npairs)
+        np.multiply.at(r, pid[cov], 1 - p[cov])
+        return float((1 - r).sum() + dm), cov, r
+
+    W = list(W)
+    F = state(W)[0]
+    for _ in range(cfg.ls_passes):
+        moved = False
+        for k in range(len(W)):
+            others = W[:k] + W[k + 1:]
+            _, cov, r = state(others)
+            w = np.where(cov, 0.0, p * r[pid])
+            cs = np.concatenate([[0.0], np.cumsum(w)])
+            g = cs[hi] - cs[lo] + dg  # linearised gain, used only to shortlist candidates
+            ok = sum(e - s for s, e in others) + length <= budget + 1e-6
+            for s, e in others:
+                ok &= (cands[:, 1] <= s) | (cands[:, 0] >= e)
+            top = np.argsort(-np.where(ok, g, -np.inf))[: cfg.ls_exact]
+            top = top[ok[top]]
+            if not len(top):
+                continue
+            vals = [state(others + [tuple(cands[j])])[0] for j in top]
+            b = int(np.argmax(vals))
+            if vals[b] > F + 1e-9:
+                W[k] = (float(cands[top[b], 0]), float(cands[top[b], 1]))
+                F = vals[b]
+                moved = True
+        if not moved:
+            break
+    return W
 
 
 def _widen(segs, dur, left):

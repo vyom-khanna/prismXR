@@ -143,7 +143,16 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
         if C.MERGE_TIOU < 1:
             from .pairing import merge_duplicates
             acts = merge_duplicates(acts, C.MERGE_TIOU)
-        acts = sorted(acts, key=lambda a: -a["score"])[:2000]
+        acts = sorted(acts, key=lambda a: -a["score"])
+        if C.CAP_REPEAT_BETA and pmax > 2000:  # output actions only: repeats of a pair make room for other pairs
+            from collections import defaultdict
+            rank, key = defaultdict(int), []
+            for a in acts:
+                rank[(a["verb"], a["noun"])] += 1
+                key.append(a["score"] / rank[(a["verb"], a["noun"])] ** C.CAP_REPEAT_BETA)
+            keep = sorted(np.argsort(-np.asarray(key), kind="stable")[:2000])
+            acts = [acts[i] for i in keep]
+        acts = acts[:2000]
         out = []
         for a in acts:
             s, e = max(0.0, a["segment"][0]), min(dur, a["segment"][1])

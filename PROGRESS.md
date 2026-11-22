@@ -293,3 +293,14 @@ actions only cannot move coverage (verified: 40.95 identical).
 - Backup (per-verb duration prior): rejected, mAP falls monotonically.
 Activation-guided weight editing (Fable 5.2 probe): no dead/over-active units worth editing; density temperature
 and dead-unit ablations all lower coverage (39.13-39.57). Rejected.
+
+## v8 (2026-11-22) — literature review (Fable 5.2, research/literature_review.md) + Opus worker: 40.12
+Full run 187/187 valid; integrity CLEAN / rename IDENTICAL. mAP 22.84 [30.10 24.66], coverage 41.75 [40.61 42.40]
+(ov50 variant 40.22 -> 41.23, so the gain does not depend on the coverage rule), F1 31.64, label 97.96.
+- #1 cap-aware survivor choice (Dave et al. 2021): output actions surviving the 2000 cap ranked by score / r^0.35,
+  r = rank within the same (verb, noun) in the video; emitted scores unchanged. Fold picks cross-validate.
+- #2 local search after the coverage greedy (Khuller-Moss-Naor 1999): swap each window for the best replacement
+  (4/4.5/5 s, top-20 shortlist, exact objective) while E[distinct pairs] + dens_w * density rises. Objective +4.9%.
+- Rejected: #3 boundary voting (<+0.1), #4 context v2 (verb context / video-level nouns), #5 UniVTG zero-shot
+  saliency for sports (F1 31.64 -> 31.12, 7/14 categories up; run once with a pre-fixed weight).
+README now explicitly discloses the FPVSum ridge fit and EPIC-val hyper-parameter selection.

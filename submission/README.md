@@ -40,10 +40,13 @@ CLIP ViT-L/14 (DataComp-XL) zero-shot, prompt ensembles over 15 classes
         → output actions only: temporal noun-context rescoring, score × (0.1 + ctx)^0.15, where ctx = support of
           the action's noun from nouns predicted on other segments nearby (exp(−|Δt|/10 s)), through a noun
           co-occurrence matrix fitted on EPIC-100 train annotations (Kazakos et al. BMVC'21; Pato et al. CVPR'20)
+        → which output actions survive the 2000 cap: ranked by score / r^0.35, r = the action's rank (1, 2, ...) among predictions
+          of the same (verb, noun) in the video (emitted scores unchanged; cap-aware AP, Dave et al. 2021)
   │     Action-density model (ours, EPIC-100 train): expected action midpoints per 0.53 s step
   │     Coverage-optimal highlights: greedy budgeted max-coverage of DISTINCT (verb, noun) pairs
   │        + 0.2 × expected #actions in the window, 4–5 s windows, fill to 14.9 %,
-  │        leftover budget widens windows
+  │        then a local search moves / resizes / swaps each window (4, 4.5, 5 s) while the same objective rises
+        (swap-based refinement of greedy budgeted max-coverage, Khuller–Moss–Naor 1999), leftover budget widens windows
   │
   └─ sports ────► FPVSum branch
         2 fps frames → per-frame importance = ridge combination of motion (multi-scale frame
@@ -104,12 +107,12 @@ feature cache), `PRISM_FFMPEG` / `PRISM_FFPROBE` (if not on PATH), `PRISM_PYTHON
 
 ## 4. Results (our local re-implementation of the four metrics; approximate)
 
-Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **39.7**.
+Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **40.1**.
 
 | Metric (weight) | Uniform baseline | **Ours** |
 |---|---|---|
-| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **22.4** |
-| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **41.0** (upper bound with perfect actions: 61.0) |
+| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **22.8** |
+| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **41.8** (upper bound with perfect actions: 61.0) |
 | Highlight F1 vs top-15 % human frames (25 %) | 14.1 | **31.6** (human-vs-consensus: 37.6) |
 | Label accuracy (10 %) | — | **98.0** (48/49; the one miss is the private-video placeholder) |
 
