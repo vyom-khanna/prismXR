@@ -78,6 +78,9 @@ def main():
     ap.add_argument("--epochs", type=int, default=40)
     ap.add_argument("--noise", type=float, default=0.3, help="feature noise (x feature std) for robustness")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--init", help="fine-tune from this checkpoint (weight-space soups)")
+    ap.add_argument("--lr", type=float, default=1e-3)
+    ap.add_argument("--spread", type=float, default=0.0, help="random spread scale s~U(spread,1) around the crop mean")
     ap.add_argument("--singleton", action="store_true", help="target = 1/pair-count weighted midpoints")
     a = ap.parse_args()
     torch.manual_seed(a.seed)
@@ -93,13 +96,19 @@ def main():
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     cfg = {"d": 256}
     net = DensityNet(**cfg).to(dev)
-    opt = torch.optim.AdamW(net.parameters(), lr=1e-3, weight_decay=0.05)
+    if a.init:
+        net.load_state_dict(torch.load(a.init, map_location="cpu")["state_dict"])
+    opt = torch.optim.AdamW(net.parameters(), lr=a.lr, weight_decay=0.05)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, a.epochs)
     best, best_sd = 1e9, None
     for ep in range(a.epochs):
         net.train()
         for X, Y, M in batches(data, tr, 512, 8, rng):
             X, Y, M = X.to(dev), Y.to(dev), M.to(dev)
+            if a.spread:
+                s_ = torch.empty(X.shape[0], 1, 1, device=dev).uniform_(a.spread, 1.0)
+                mu_ = X[..., :2304].mean(1, keepdim=True)
+                X[..., :2304] = mu_ + s_ * (X[..., :2304] - mu_)
             if a.noise:
                 X[..., :2304] += a.noise * fstd * torch.randn_like(X[..., :2304])
             lr = net(X)

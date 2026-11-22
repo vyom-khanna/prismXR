@@ -269,3 +269,15 @@ Review (Fable) found 5 items; all-on + leave-one-out on 2-fold CV:
   (applied to highlight selection too it cost fold-2 coverage)
 - #3 TARGET_FILL 0.1495: REJECTED (−0.07)
 Final: mAP 22.36 [29.55 24.10], coverage 40.95 [39.68 41.66], F1 31.64, label 97.96 -> WEIGHTED 39.67 (v5 39.40).
+
+## Weight-space programme (plan by Fable 5.2 high, executed 2026-11-22) — all REJECTED, v6 final
+2-fold CV totals (v6 = 39.69 on the harness):
+- AF fine-tunes from official (ft11/ft12; 1+4 epochs, lr/4): ft11 39.47 · soup ft11+ft12 39.46 · soup off+ft11+ft12 39.42
+  · noun only 39.63 · verb only 39.45 (fine-tuning on released features lowers mAP on our features)
+- Per-video input recalibration (option 2, unsupervised TTA): chan 38.64 · global 39.00 · scale 39.14 · per-video-train-spread
+  39.53 · half 39.66. Train per-video spread (0.160) already equals ours (0.159): no real gap. Code parked in tools/experimental/tta.py.
+- Density WiSE single->all beta .25/.5/1: 39.45 / 39.28 / 38.96; density fine-tune soups (3 seeds, spread aug): 39.50 / 39.51
+- Segcls fine-tune soups (3 seeds, spread aug): 39.51 / 39.50 (mAP +0.06/+0.18 per fold but pooled -0.01; coverage -0.4)
+- Diagnostic: v6 on RELEASED val features (136 vids) scores BELOW our own features (EPIC part 21.72 vs 21.96) ->
+  feature mismatch costs nothing; mismatch-augmented AF fine-tune and TENT skipped by the plan's kill rules.
+Pattern: every change to action scores moves mAP by <=0.2 but shifts the score calibration coverage selection depends on.

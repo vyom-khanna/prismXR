@@ -36,6 +36,9 @@ def main():
     ap.add_argument("--jitter", type=int, default=3, help="jittered copies per GT segment")
     ap.add_argument("--noise", type=float, default=0.3)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--init", help="fine-tune from this checkpoint (weight-space soups)")
+    ap.add_argument("--lr", type=float, default=5e-4)
+    ap.add_argument("--spread", type=float, default=0.0, help="random spread scale s~U(spread,1) of SlowFast dims around the train mean")
     a = ap.parse_args()
     rng = np.random.default_rng(a.seed)
     torch.manual_seed(a.seed)
@@ -81,7 +84,10 @@ def main():
     Xt = torch.from_numpy(X)
     fstd = float(X[:5000].std())
     net = SegNet(len(pairs)).to(dev)
-    opt = torch.optim.AdamW(net.parameters(), lr=5e-4, weight_decay=0.05)
+    if a.init:
+        net.load_state_dict(torch.load(a.init, map_location="cpu")["state_dict"])
+    fmu = Xt[:20000].mean(0).to(dev)
+    opt = torch.optim.AdamW(net.parameters(), lr=a.lr, weight_decay=0.05)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, a.epochs)
     ce = torch.nn.CrossEntropyLoss(ignore_index=-100, label_smoothing=0.1)
     tri, hoi = np.where(tr)[0], np.where(ho)[0]
@@ -91,6 +97,9 @@ def main():
         for i in range(0, len(tri), 512):
             b = rng.permutation(tri)[:512] if i == 0 else tri[rng.integers(0, len(tri), 512)]
             xb = Xt[b].to(dev)
+            if a.spread:
+                s_ = torch.empty(xb.shape[0], 1, device=dev).uniform_(a.spread, 1.0)
+                xb = fmu + s_ * (xb - fmu)
             if a.noise:
                 xb = xb + a.noise * fstd * torch.randn_like(xb)
             ov, on, oa = net(xb)
