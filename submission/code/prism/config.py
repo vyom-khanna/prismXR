@@ -41,4 +41,5 @@ PAIR_MAX = 12000       # review #5: output actions keep this many pairing candid
 NOUN_CTX = (10.0, 0.15, 0.1)  # temporal noun-context rescoring of OUTPUT actions (sigma s, gamma, eps); None = off
 CAP_REPEAT_BETA = 0.35  # which output actions survive the 2000 cap: rank by score / r**beta, r = rank of the instance within
                         # its (verb, noun) pair in this video (Dave et al. 2021 cap-aware AP); emitted scores unchanged. 0 = off
+SEL_PAIR_CAP = 2000    # pairing candidates kept for the highlight-selection action set
 SEL_LOCAL_SEARCH = True # post-greedy swap/shift/resize local search on the coverage objective (Khuller et al. 1999)

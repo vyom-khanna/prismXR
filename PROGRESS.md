@@ -304,3 +304,8 @@ Full run 187/187 valid; integrity CLEAN / rename IDENTICAL. mAP 22.84 [30.10 24.
 - Rejected: #3 boundary voting (<+0.1), #4 context v2 (verb context / video-level nouns), #5 UniVTG zero-shot
   saliency for sports (F1 31.64 -> 31.12, 7/14 categories up; run once with a pre-fixed weight).
 README now explicitly discloses the FPVSum ridge fit and EPIC-val hyper-parameter selection.
+
+## v9 (2026-11-22 18:40) — selection retune with local search on: 40.27 (full run 187/187, CLEAN / IDENTICAL)
+p_cap 0.95 -> 1.0, ls_lengths + 5.5/6 s. Coverage 41.75 -> 42.13 [40.61->40.65, 42.40->42.97] (ov50 41.23 -> 41.60).
+Fold-A gain is tiny (+0.04); honest expectation about +0.1. Rejected: calib_pow, dens_w, greedy lengths, ls_exact,
+step 0.25, max_instances, pair moves / window merging (raise the proxy, lower real coverage), sel LAV top-k 150/300, sel cap 3000.

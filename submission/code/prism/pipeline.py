@@ -171,8 +171,8 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
         n = len(cls["nouns"])  # pad to the full class list (incl. "other") so any noun maps safely
         M = 0.5 * np.eye(n, dtype=np.float32) + 0.5 * np.pad(M, ((0, n - len(M)), (0, n - len(M))))
         out = [dict(a, score=round(a["score"], 6)) for a in noun_context(out, cls["nouns"], M, sig, gam, eps)]
-    # highlight selection: top LAV_SEL_TOPK LaViLa segments and 2000 pairing candidates
-    sel = build(None if lav is None else tuple(x[:C.LAV_SEL_TOPK] for x in lav), 2000)
+    # highlight selection: top LAV_SEL_TOPK LaViLa segments and SEL_PAIR_CAP pairing candidates
+    sel = build(None if lav is None else tuple(x[:C.LAV_SEL_TOPK] for x in lav), C.SEL_PAIR_CAP)
     dens = Density().predict(F["feats"], F["verb"], F["noun"])
     _free()
     t["segcls"] = time.perf_counter() - t0

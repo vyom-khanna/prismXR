@@ -24,7 +24,7 @@ class CovCfg:
     step: float = 0.5
     max_instances: int = 2000
     calib_pow: float = 2.0      # p = (score / max_score) ** calib_pow  (CV best of 0.5/1/2/3)
-    p_cap: float = 0.95
+    p_cap: float = 1.0         # with the local search on, 2-fold CV: 1.0 >= 0.99 > 0.95 > 0.9
     fill_rest: bool = True      # spend leftover budget on uncovered stretches
     widen: bool = True          # then grow windows to use the last (<MIN_SEG) seconds of budget
     dens_pow: float = 0.0       # p_i *= (local action density / mean density) ** dens_pow   (0 = off)
@@ -32,7 +32,7 @@ class CovCfg:
     margin: float = 0.0         # instance counts as covered only if its midpoint is >= margin inside the window
     dens_smooth: int = 5        # density smoothing (feature steps) before reading it at instance midpoints
     local_search: bool = C.SEL_LOCAL_SEARCH  # after the greedy: move/resize/swap windows while the objective rises
-    ls_lengths: tuple = (4.0, 4.5, 5.0)  # window lengths the local search may use
+    ls_lengths: tuple = (4.0, 4.5, 5.0, 5.5, 6.0)  # window lengths the local search may use (CV: +5.5/6 > (4,4.5,5))
     ls_exact: int = 20          # per window, re-evaluate the top-k replacement candidates on the exact objective
     ls_passes: int = 10
 

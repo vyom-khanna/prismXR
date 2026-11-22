@@ -45,7 +45,7 @@ CLIP ViT-L/14 (DataComp-XL) zero-shot, prompt ensembles over 15 classes
   │     Action-density model (ours, EPIC-100 train): expected action midpoints per 0.53 s step
   │     Coverage-optimal highlights: greedy budgeted max-coverage of DISTINCT (verb, noun) pairs
   │        + 0.2 × expected #actions in the window, 4–5 s windows, fill to 14.9 %,
-  │        then a local search moves / resizes / swaps each window (4, 4.5, 5 s) while the same objective rises
+  │        then a local search moves / resizes / swaps each window (4–6 s) while the same objective rises
         (swap-based refinement of greedy budgeted max-coverage, Khuller–Moss–Naor 1999), leftover budget widens windows
   │
   └─ sports ────► FPVSum branch
@@ -107,12 +107,12 @@ feature cache), `PRISM_FFMPEG` / `PRISM_FFPROBE` (if not on PATH), `PRISM_PYTHON
 
 ## 4. Results (our local re-implementation of the four metrics; approximate)
 
-Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **40.1**.
+Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own feature extraction), weighted total **40.3**.
 
 | Metric (weight) | Uniform baseline | **Ours** |
 |---|---|---|
 | Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **22.8** |
-| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **41.8** (upper bound with perfect actions: 61.0) |
+| Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **42.1** (upper bound with perfect actions: 61.0) |
 | Highlight F1 vs top-15 % human frames (25 %) | 14.1 | **31.6** (human-vs-consensus: 37.6) |
 | Label accuracy (10 %) | — | **98.0** (48/49; the one miss is the private-video placeholder) |
 
