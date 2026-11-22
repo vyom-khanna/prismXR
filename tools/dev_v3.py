@@ -34,13 +34,13 @@ class _MemoAF:
 ED.ActionFormerEPIC = _MemoAF
 
 
-def lav_of(v):
-    p = E.feat_file(v).replace("_sf.npz", "_lav.npz")
+def lav_of(v, tag="lav"):
+    p = E.feat_file(v).replace("_sf.npz", f"_{tag}.npz")
     with np.load(p) as z:
         return z["segs"], z["v"].astype(np.float32), z["n"].astype(np.float32)
 
 
-FEATS, LAV = {}, {}
+FEATS, LAV, LAVN = {}, {}, {}
 
 
 def actions(C=None, pair=None):
@@ -59,7 +59,12 @@ def actions(C=None, pair=None):
                     FEATS[v] = {k: z[k] for k in z.files}
                 LAV[v] = lav_of(v)
             _cur[0] = v
-            out[v] = PL.epic_actions(FEATS[v], E.MAN[v][0], {}, lav=LAV[v])
+            if PC.LAV_NOUN_K > 0 and v not in LAVN:
+                LAVN[v] = lav_of(v, "lavn")
+            ln = None
+            if PC.LAV_NOUN_K > 0:
+                ln = tuple(x[:PC.LAV_NOUN_K] for x in LAVN[v])
+            out[v] = PL.epic_actions(FEATS[v], E.MAN[v][0], {}, lav=LAV[v], lavn=ln)
     finally:
         for k, val in old.items():
             setattr(PC, k, val)

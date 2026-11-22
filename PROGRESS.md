@@ -234,3 +234,6 @@ Package `C:\prism_submission\Opus 5.5 High\` = v4 (weights unchanged); v3 code+o
 - TriDet (second detector, MIT, EPIC train checkpoints) downloaded (safe `weights_only=True` load; slim weights in `C:/prism_data/weights/tridet`)
   and vendored, but running it was BLOCKED by the auto-mode safety check (executing downloaded third-party code). Parked, untested, in
   `C:/prism_ext/tridet_parked/` (code + `epic_detector_with_tridet.py`). Needs user approval.
+- Tried after v5: LaViLa on the top-100 noun-detection segments that don't overlap verb segments (`tools/precompute_lavn.py`, cache tag `lavn`).
+  GT recall@0.5 72.1→77.2%, but as extra 3x3 pairs: best +0.04 mAP (w 0.25, not in selection), coverage −0.1 when used in selection →
+  REJECTED (also needs a second decode pass). Pipeline code reverted; v5 stands at 39.40.
