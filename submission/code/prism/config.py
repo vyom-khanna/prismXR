@@ -38,3 +38,4 @@ SHORT_GREEDY = True    # review #2: budget < MIN_SEG -> still run the greedy cov
 SPORTS_WIDEN = True    # review #1: sports highlights grow to spend the leftover (< seg_len) budget, as EPIC does
 PAIR_MAX = 12000       # review #5: output actions keep this many pairing candidates (the 2000 cap is applied after the merge);
                        # highlight selection keeps the 2000-candidate set (CV: the long tail costs coverage)
+NOUN_CTX = (10.0, 0.15, 0.1)  # temporal noun-context rescoring of OUTPUT actions (sigma s, gamma, eps); None = off

@@ -37,6 +37,9 @@ CLIP ViT-L/14 (DataComp-XL) zero-shot, prompt ensembles over 15 classes
         → same (verb, noun) predictions overlapping at tIoU ≥ 0.8 merged (noisy-or score)  (≤ 2000 actions)
         (pairing keeps up to 12000 candidates before the merge, so the 2000 cap applies after it; highlight
         selection uses actions built from the top-200 LaViLa segments and 2000 candidates)
+        → output actions only: temporal noun-context rescoring, score × (0.1 + ctx)^0.15, where ctx = support of
+          the action's noun from nouns predicted on other segments nearby (exp(−|Δt|/10 s)), through a noun
+          co-occurrence matrix fitted on EPIC-100 train annotations (Kazakos et al. BMVC'21; Pato et al. CVPR'20)
   │     Action-density model (ours, EPIC-100 train): expected action midpoints per 0.53 s step
   │     Coverage-optimal highlights: greedy budgeted max-coverage of DISTINCT (verb, noun) pairs
   │        + 0.2 × expected #actions in the window, 4–5 s windows, fill to 14.9 %,
@@ -61,6 +64,7 @@ Models are loaded one at a time; peak GPU memory ≈ 1.6 GB (fits a 6 GB laptop 
 | ActionFormer verb / noun | `happyharrycn/actionformer_release` EPIC-100 checkpoints (EPIC-100 **train** split) |
 | LaViLa TimeSformer-L EK100-CLS (`lavila/tsf_l_ek100_vn_fp16.pth`, 0.8 GB) | `facebookresearch/LaViLa` checkpoint fine-tuned on EPIC-100 **train**; fp16, **verb and noun heads only**. Its action head is dropped because LaViLa indexes it by a pair list built from train + validation annotations |
 | Segment classifier (`epic_segcls.pt`, 43 MB) | trained by us on EPIC-100 **train** annotations + ActionFormer's released train-split SlowFast features (`tools/train_segcls.py`) |
+| Noun co-occurrence matrix (`epic_nounctx.npz`, 0.4 MB) | counted by us from EPIC-100 **train** annotations (`tools/build_nounctx.py`) |
 | Action-density model (`epic_density.pt`, 7 MB) | trained by us on the same EPIC-100 **train** data (`tools/train_density.py`) |
 | Sports importance weights | 11 ridge coefficients, validated with leave-one-category-out CV |
 | Pairing / coverage hyper-parameters | a handful of weights chosen by 2-fold cross-validation on EPIC val, split by participant; kept only when both folds improve |
@@ -84,7 +88,7 @@ Weights are expected in `weights/` (override with `PRISM_WEIGHTS`):
 `SlowFast_model.pyth` (SlowFast-R50 EPIC-100, model state only), `actionformer/epic_slowfast_{verb,noun}_ema.pth.tar`
 (ActionFormer EPIC-100 EMA weights), `clip/open_clip_fp16.bin` (fp16 OpenCLIP ViT-L/14 DataComp), `epic_prior.npz`
 (P(noun|verb) from the EPIC-100 *train* annotations), `epic_segcls.pt` (segment classifier) and `epic_density.pt`
-(action-density model), both trained on the EPIC-100 *train* split, and `lavila/tsf_l_ek100_vn_fp16.pth` (LaViLa
+(action-density model), `epic_nounctx.npz` (noun co-occurrence counts), all built from the EPIC-100 *train* split only, and `lavila/tsf_l_ek100_vn_fp16.pth` (LaViLa
 TimeSformer-L, verb/noun heads, fp16). `weights/MD5SUMS.txt` lists checksums. Total ≈ 2 GB.
 
 Environment variables: `PRISM_TEAM_ID` (default `Opus 5.5 High`), `PRISM_WEIGHTS`, `PRISM_CACHE` (optional

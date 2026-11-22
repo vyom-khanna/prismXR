@@ -129,3 +129,34 @@ def merge_duplicates(acts: list[dict], thr: float = 0.8) -> list[dict]:
                 keep.append(dict(a))
         out += keep
     return out
+
+
+def noun_context(acts: list[dict], nouns: list[str], M: np.ndarray, sigma: float, gamma: float, eps: float = 0.1):
+    """Temporal noun-context rescoring (cf. Kazakos et al., BMVC 2021; Pato et al., CVPR 2020).
+
+    score *= (eps + ctx) ** gamma, where ctx in [0, 1] is how strongly the action's noun is supported by the nouns
+    predicted on OTHER nearby segments (kernel exp(-|dt| / sigma)), mapped through M, a noun co-occurrence matrix
+    fitted on the EPIC-100 TRAIN annotations (tools/build_nounctx.py). Segments overlapping at tIoU >= 0.5 do not
+    support each other, so a segment's own alternative nouns are excluded. Used on output actions only.
+    """
+    if not acts:
+        return acts
+    ni_of = {n: i for i, n in enumerate(nouns)}
+    keys = {}
+    si = np.array([keys.setdefault(tuple(a["segment"]), len(keys)) for a in acts])
+    ni = np.array([ni_of[a["noun"]] for a in acts])
+    sc = np.array([a["score"] for a in acts], float)
+    segs = np.array(list(keys), float)
+    mass = np.zeros((len(segs), M.shape[0]))
+    np.add.at(mass, (si, ni), sc)
+    t = segs.mean(1)
+    inter = np.clip(np.minimum(segs[:, None, 1], segs[None, :, 1]) - np.maximum(segs[:, None, 0], segs[None, :, 0]), 0, None)
+    L = segs[:, 1] - segs[:, 0]
+    tiou = inter / np.maximum(L[:, None] + L[None, :] - inter, 1e-6)
+    K = np.exp(-np.abs(t[:, None] - t[None, :]) / sigma)
+    K[tiou >= 0.5] = 0
+    Q = (K @ mass) @ M.T
+    ctx = Q[si, ni] / np.maximum(Q[si].max(1), 1e-12)
+    new = sc * (eps + ctx) ** gamma
+    out = [dict(a, score=float(min(max(s, 0.0), 1.0))) for a, s in zip(acts, new)]
+    return sorted(out, key=lambda a: -a["score"])

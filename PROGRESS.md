@@ -281,3 +281,15 @@ Final: mAP 22.36 [29.55 24.10], coverage 40.95 [39.68 41.66], F1 31.64, label 97
 - Diagnostic: v6 on RELEASED val features (136 vids) scores BELOW our own features (EPIC part 21.72 vs 21.96) ->
   feature mismatch costs nothing; mismatch-augmented AF fine-tune and TENT skipped by the plan's kill rules.
 Pattern: every change to action scores moves mAP by <=0.2 but shifts the score calibration coverage selection depends on.
+
+## v7 (2026-11-22) — temporal noun-context rescoring: 39.72 (full run, 187/187 valid, integrity CLEAN/IDENTICAL)
+Research + decision by Fable 5.2 (papers: Kazakos et al. BMVC'21 temporal context; Pato et al. CVPR'20 contextual
+rescoring). Key insight: output actions and highlight-selection actions are built separately, so rescoring OUTPUT
+actions only cannot move coverage (verified: 40.95 identical).
+- score *= (0.1 + ctx)^0.15, ctx = support of the action's noun from other nearby segments' nouns (exp(-dt/10 s),
+  tIoU>=0.5 neighbours excluded) through M = 0.5 I + 0.5 M10, M10 = noun co-occurrence counted on EPIC-100 TRAIN
+  annotations (tools/build_nounctx.py -> weights/epic_nounctx.npz).
+- CV: mAP 22.36 -> 22.54 [29.55->29.68, 24.10->24.26]; config chosen on either fold also improves the other.
+- Backup (per-verb duration prior): rejected, mAP falls monotonically.
+Activation-guided weight editing (Fable 5.2 probe): no dead/over-active units worth editing; density temperature
+and dead-unit ablations all lower coverage (39.13-39.57). Rejected.

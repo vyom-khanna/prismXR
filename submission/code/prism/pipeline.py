@@ -155,6 +155,13 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
 
     t0 = time.perf_counter()
     out = build(lav, C.PAIR_MAX)
+    if C.NOUN_CTX:  # output actions only: coverage selection below keeps its own action set
+        from .pairing import noun_context
+        sig, gam, eps = C.NOUN_CTX
+        M = np.load(os.path.join(C.WEIGHTS_DIR, "epic_nounctx.npz"))["M10"]
+        n = len(cls["nouns"])  # pad to the full class list (incl. "other") so any noun maps safely
+        M = 0.5 * np.eye(n, dtype=np.float32) + 0.5 * np.pad(M, ((0, n - len(M)), (0, n - len(M))))
+        out = [dict(a, score=round(a["score"], 6)) for a in noun_context(out, cls["nouns"], M, sig, gam, eps)]
     # highlight selection: top LAV_SEL_TOPK LaViLa segments and 2000 pairing candidates
     sel = build(None if lav is None else tuple(x[:C.LAV_SEL_TOPK] for x in lav), 2000)
     dens = Density().predict(F["feats"], F["verb"], F["noun"])
