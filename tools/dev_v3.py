@@ -18,6 +18,11 @@ _det = pickle.load(open(DETS, "rb")) if os.path.exists(DETS) else {}
 _cur = [None]
 
 
+TD_DETS = r"C:/prism_data/dev_outputs/td_dets.pkl"
+_td = pickle.load(open(TD_DETS, "rb")) if os.path.exists(TD_DETS) else {}
+SRC = {"verb": "af", "noun": "af"}   # per kind: "af", "td", or a callable (af_det, td_det) -> det
+
+
 class _MemoAF:
     def __init__(self, kind):
         self.kind = kind
@@ -28,7 +33,12 @@ class _MemoAF:
             m = _real(self.kind)
             _det[k] = m.detect(feats, dur)
             del m
-        return _det[k]
+        s = SRC[self.kind]
+        if s == "af":
+            return _det[k]
+        if s == "td":
+            return _td[k]
+        return s(_det[k], _td[k])
 
 
 ED.ActionFormerEPIC = _MemoAF
@@ -59,12 +69,7 @@ def actions(C=None, pair=None):
                     FEATS[v] = {k: z[k] for k in z.files}
                 LAV[v] = lav_of(v)
             _cur[0] = v
-            if PC.LAV_NOUN_K > 0 and v not in LAVN:
-                LAVN[v] = lav_of(v, "lavn")
-            ln = None
-            if PC.LAV_NOUN_K > 0:
-                ln = tuple(x[:PC.LAV_NOUN_K] for x in LAVN[v])
-            out[v] = PL.epic_actions(FEATS[v], E.MAN[v][0], {}, lav=LAV[v], lavn=ln)
+            out[v] = PL.epic_actions(FEATS[v], E.MAN[v][0], {}, lav=LAV[v])
     finally:
         for k, val in old.items():
             setattr(PC, k, val)

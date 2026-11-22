@@ -237,3 +237,11 @@ Package `C:\prism_submission\Opus 5.5 High\` = v4 (weights unchanged); v3 code+o
 - Tried after v5: LaViLa on the top-100 noun-detection segments that don't overlap verb segments (`tools/precompute_lavn.py`, cache tag `lavn`).
   GT recall@0.5 72.1→77.2%, but as extra 3x3 pairs: best +0.04 mAP (w 0.25, not in selection), coverage −0.1 when used in selection →
   REJECTED (also needs a second decode pass). Pipeline code reverted; v5 stands at 39.40.
+
+## TriDet (user-approved test, 2026-11-22) — REJECTED
+TriDet verb/noun EPIC checkpoints (weights_only load) on our cached SlowFast features, 138 val videos, 2-fold CV.
+EPIC-weighted part (0.25 mAP + 0.4 cov), v5 = 21.89 (mAP 22.18, cov 40.85):
+- TriDet replaces both: 21.62 · TD verb only 21.75 · TD noun only 21.72
+- union AF+TD (both / verb / noun): 21.72 / 21.65 / 21.79
+- AF segments rescored with matched TD score (w .3 both / .5 both / .3 verb / .3 noun): 21.67 / 21.64 / 21.73 / 21.84
+mAP rises by up to +0.2 but coverage drops by 0.1–0.8 in every variant. Code removed; v5 remains final.
