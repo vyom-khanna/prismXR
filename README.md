@@ -24,6 +24,7 @@ Local score on all 187 manifest videos (our re-implementation of the metrics): *
 | `TIET_Opus5.5high/` | the submission: inference code, all model weights (large ones as <100 MB parts, rejoined by run.sh), 187 output JSONs |
 | `tools/` | development only: training scripts for our models, evaluation, tuning and integrity checks (never imported at inference) |
 | `research/` | literature review behind the design choices |
+| `AI_DISCLOSURE.md` | how AI assistance (Claude Code) was used, and the AI models inside the system |
 | `PROGRESS.md` | experiment log (every change, kept or rejected, with its cross-validation result) |
 | `TIET_Opus5.5high_Submission.pptx` | presentation deck |
 | `Student package_track04/` | the organiser's student kit (manifest, classes, TEAM_README) |
