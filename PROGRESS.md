@@ -309,3 +309,11 @@ README now explicitly discloses the FPVSum ridge fit and EPIC-val hyper-paramete
 p_cap 0.95 -> 1.0, ls_lengths + 5.5/6 s. Coverage 41.75 -> 42.13 [40.61->40.65, 42.40->42.97] (ov50 41.23 -> 41.60).
 Fold-A gain is tiny (+0.04); honest expectation about +0.1. Rejected: calib_pow, dens_w, greedy lengths, ls_exact,
 step 0.25, max_instances, pair moves / window merging (raise the proxy, lower real coverage), sel LAV top-k 150/300, sel cap 3000.
+
+## v10 FINAL (2026-11-22 ~20:15) — output-only LaViLa 5x5 alternative pairs: 40.30
+Full run 187/187 valid; static scan CLEAN; rename test IDENTICAL (EPIC P03_26 + FPVSum Surfing); MD5 OK.
+mAP 22.84 -> 22.98 [30.10->30.31, 24.66->24.75]; coverage 42.13 unchanged (bit-identical); F1 31.64; label 97.96.
+Fold-A pick == fold-B pick. Rejected: W 0.4, source-aware cap key kappa 1.5-3.
+Final diagnosis (Fable, offline GT): coverage loss is mostly the 15 % budget (45 of 56.5 missed points are correctly
+predicted & placed but not selectable); remaining lever is action POSITIONS (GT positions -> 52.6), needs new signals.
+FROZEN. Honest unseen-video estimate (README disclosure): about 39.5-40.

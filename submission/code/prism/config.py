@@ -31,6 +31,9 @@ LAV_MATCH = 0.5       # a detection uses LaViLa's noun probs if it overlaps a cl
 LAV_W = 1.0           # weight of LaViLa noun probs vs segment-classifier noun probs (chosen on a 21-video val subset)
 LAV_ALT = 3           # extra actions: LaViLa top-k verbs x top-k nouns per classified segment
 LAV_ALT_W = 0.25      # their score = LAV_ALT_W * (p_verb * p_noun) ** 0.75
+OUT_LAV_ALT = (5, 5)  # OUTPUT actions only: LaViLa top-a verbs x top-b nouns (selection set keeps LAV_ALT x LAV_ALT); 2-fold CV
+OUT_LAV_ALT_W = 0.25  # OUTPUT actions only: weight of those alternative pairs (selection set keeps LAV_ALT_W)
+OUT_ALT_KAPPA = 1.0   # OUTPUT actions only: alternative pairs' cap-survivor key multiplied by this; emitted scores unchanged (CV: 1.5-3 no gain)
 MERGE_TIOU = 0.8      # same (verb, noun) predictions overlapping >= this are merged (noisy-or score); 2-fold CV
 
 MIN_LEN_PAD = 0.02     # review #4: finalize grows windows to MIN_SEG + this (0.01 could round back to exactly 4.00)

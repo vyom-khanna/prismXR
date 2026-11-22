@@ -33,7 +33,7 @@ CLIP ViT-L/14 (DataComp-XL) zero-shot, prompt ensembles over 15 classes
   │        = 0.3 overlapping noun detections + 0.4 segment-classifier noun + 0.3 action head (noun | verb)
   │        (LaViLa's noun probs replace the segment-classifier noun term where a LaViLa segment overlaps)
   │        → top-8 (verb, noun) actions per segment, score = s_verb · p_noun^0.75
-  │        + LaViLa top-3 verbs × top-3 nouns per LaViLa segment at 0.25 weight
+  │        + LaViLa top-3 verbs × top-3 nouns per LaViLa segment at 0.25 weight (top-5 × top-5 for the output actions)
         → same (verb, noun) predictions overlapping at tIoU ≥ 0.8 merged (noisy-or score)  (≤ 2000 actions)
         (pairing keeps up to 12000 candidates before the merge, so the 2000 cap applies after it; highlight
         selection uses actions built from the top-200 LaViLa segments and 2000 candidates)
@@ -111,7 +111,7 @@ Full end-to-end run of `run.sh`'s pipeline on all 187 manifest videos (our own f
 
 | Metric (weight) | Uniform baseline | **Ours** |
 |---|---|---|
-| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **22.8** |
+| Action mAP, verb–noun pairs, tIoU 0.1–0.5 (25 %) | 0 | **23.0** |
 | Action Coverage, distinct GT pairs in highlights (40 %) | 19.2 | **42.1** (upper bound with perfect actions: 61.0) |
 | Highlight F1 vs top-15 % human frames (25 %) | 14.1 | **31.6** (human-vs-consensus: 37.6) |
 | Label accuracy (10 %) | — | **98.0** (48/49; the one miss is the private-video placeholder) |

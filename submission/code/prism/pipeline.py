@@ -117,7 +117,7 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
         lav = (lsegs,) + epic_lavila(video, lsegs)
         t["lavila"] = time.perf_counter() - t0
 
-    def build(lav, pmax):
+    def build(lav, pmax, alt=(C.LAV_ALT, C.LAV_ALT), alt_w=C.LAV_ALT_W, kappa=1.0):
         sc = SegCls()
         pairs = sc.pairs.numpy() if hasattr(sc.pairs, "numpy") else np.asarray(sc.pairs)
 
@@ -133,13 +133,13 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
         acts = pair_actions(det["verb"], det["noun"], F["noun"], F["t_center"], prior,
                             cls["verbs"], cls["nouns"], dataclasses.replace(PairCfg(), max_actions=pmax), seg_model=seg_model)
         del sc
-        if lav is not None and C.LAV_ALT > 0:
+        if lav is not None and min(alt) > 0:
             for k, (s, e) in enumerate(lav[0]):
                 pv, pn = lav[1][k], lav[2][k]
-                for a_ in np.argsort(-pv)[:C.LAV_ALT]:
-                    for b_ in np.argsort(-pn)[:C.LAV_ALT]:
+                for a_ in np.argsort(-pv)[:alt[0]]:
+                    for b_ in np.argsort(-pn)[:alt[1]]:
                         acts.append({"segment": [float(s), float(e)], "verb": cls["verbs"][a_], "noun": cls["nouns"][b_],
-                                     "score": C.LAV_ALT_W * float(pv[a_] * pn[b_]) ** 0.75})
+                                     "score": alt_w * float(pv[a_] * pn[b_]) ** 0.75, "alt": True})
         if C.MERGE_TIOU < 1:
             from .pairing import merge_duplicates
             acts = merge_duplicates(acts, C.MERGE_TIOU)
@@ -149,7 +149,7 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
             rank, key = defaultdict(int), []
             for a in acts:
                 rank[(a["verb"], a["noun"])] += 1
-                key.append(a["score"] / rank[(a["verb"], a["noun"])] ** C.CAP_REPEAT_BETA)
+                key.append(a["score"] / rank[(a["verb"], a["noun"])] ** C.CAP_REPEAT_BETA * (kappa if a.get("alt") else 1.0))
             keep = sorted(np.argsort(-np.asarray(key), kind="stable")[:2000])
             acts = [acts[i] for i in keep]
         acts = acts[:2000]
@@ -163,7 +163,7 @@ def epic_actions(F: dict, dur: float, t: dict, video: str | None = None, lav=Non
         return out
 
     t0 = time.perf_counter()
-    out = build(lav, C.PAIR_MAX)
+    out = build(lav, C.PAIR_MAX, C.OUT_LAV_ALT, C.OUT_LAV_ALT_W, C.OUT_ALT_KAPPA)  # output set: own LaViLa-alt grid
     if C.NOUN_CTX:  # output actions only: coverage selection below keeps its own action set
         from .pairing import noun_context
         sig, gam, eps = C.NOUN_CTX
