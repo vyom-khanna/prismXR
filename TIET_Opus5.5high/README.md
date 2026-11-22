@@ -3,7 +3,7 @@
 Team **Opus5.5high**, Thapar Institute of Engineering and Technology (TIET). Team ID: `TIET_Opus5.5high`.
 
 Package layout (TEAM_ID/): `run.sh`, `code/`, `weights/`, `requirements.txt`, `outputs/` (187 JSONs, one per
-manifest video), `README.md`, plus `Dockerfile` and `prepare_weights.py`.
+manifest video), `README.md`, plus `Dockerfile`.
 
 One command per video:
 
@@ -13,6 +13,8 @@ One command per video:
 
 The output is one JSON (`team_id`, `video_id`, `duration_sec`, `label`, `actions`, `highlights`) that
 follows the TEAM_README schema. Every output is checked by our own validator before it is written.
+
+**Demo video:** https://drive.google.com/drive/folders/1gG_aLcU4Mp3Nq-dPiHhkLjqznKbv4hbD?usp=drive_link
 
 ---
 
@@ -87,29 +89,28 @@ Python (`actionformer/utils/nms.py`), so nothing needs compiling.
 # Python 3.11–3.13, NVIDIA GPU recommended (CPU works, much slower); ffmpeg + ffprobe on PATH
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 pip install -r requirements.txt
-pip install gdown && python prepare_weights.py     # fetch + convert the third-party checkpoints (≈ 4 GB download)
 ./run.sh sample.mp4 out.json
 ```
 
-Docker (after `prepare_weights.py`): `docker build -t prism . && docker run --gpus all -v /data:/data prism /data/v.mp4 /data/out.json`
+Docker: `docker build -t prism . && docker run --gpus all -v /data:/data prism /data/v.mp4 /data/out.json`
 
 ### Weights (≈ 2 GB in `weights/`, override with `PRISM_WEIGHTS`)
 
-GitHub does not accept files over 100 MB, so only our own small models are committed; the public third-party
-checkpoints are downloaded from their authors and converted by `prepare_weights.py`. We checked that the converted
-files are byte-identical (MD5) to the ones that produced `outputs/`; `python prepare_weights.py --check` compares
-them with `weights/MD5SUMS.txt`.
+All weights are included in `weights/`. GitHub limits files to 100 MB, so the five large checkpoints are stored as
+`<file>.partNNN` chunks; `run.sh` rejoins them automatically on its first run (`code/prism/join_weights.py`) and checks
+each joined file against `weights/MD5SUMS.txt`. Nothing needs to be downloaded or set up.
+`weights/MD5SUMS.txt` lists their checksums.
 
-| File | Origin | In git? |
-|---|---|---|
-| `epic_prior.npz` | P(noun given verb) counted by us from EPIC-100 *train* annotations | yes |
-| `epic_segcls.pt` | segment classifier trained by us on EPIC-100 *train* | yes |
-| `epic_density.pt` | action-density model trained by us on EPIC-100 *train* | yes |
-| `epic_nounctx.npz` | noun co-occurrence counts from EPIC-100 *train* annotations | yes |
-| `SlowFast_model.pyth` | epic-kitchens-slowfast EPIC-100 checkpoint, `model_state` only | downloaded |
-| `actionformer/epic_slowfast_{verb,noun}_ema.pth.tar` | ActionFormer EPIC-100 release, EMA weights only | downloaded |
-| `clip/open_clip_fp16.bin` | OpenCLIP ViT-L/14 DataComp.XL (Hugging Face), fp16 | downloaded |
-| `lavila/tsf_l_ek100_vn_fp16.pth` | LaViLa TimeSformer-L EK100-CLS, visual + verb/noun heads, fp16 | downloaded |
+| File | Origin |
+|---|---|
+| `epic_prior.npz` | P(noun given verb) counted by us from EPIC-100 *train* annotations |
+| `epic_segcls.pt` | segment classifier trained by us on EPIC-100 *train* |
+| `epic_density.pt` | action-density model trained by us on EPIC-100 *train* |
+| `epic_nounctx.npz` | noun co-occurrence counts from EPIC-100 *train* annotations |
+| `SlowFast_model.pyth` | epic-kitchens-slowfast EPIC-100 checkpoint (EPIC-100 train), `model_state` only |
+| `actionformer/epic_slowfast_{verb,noun}_ema.pth.tar` | ActionFormer EPIC-100 release, EMA weights only |
+| `clip/open_clip_fp16.bin` | OpenCLIP ViT-L/14 DataComp.XL (Hugging Face), fp16 |
+| `lavila/tsf_l_ek100_vn_fp16.pth` | LaViLa TimeSformer-L EK100-CLS, visual + verb/noun heads, fp16 |
 
 Environment variables: `PRISM_TEAM_ID` (default `TIET_Opus5.5high`), `PRISM_WEIGHTS`, `PRISM_CACHE` (optional
 feature cache), `PRISM_FFMPEG` / `PRISM_FFPROBE` (if not on PATH), `PRISM_PYTHON` (interpreter for run.sh).

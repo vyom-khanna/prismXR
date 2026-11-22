@@ -8,4 +8,5 @@ fi
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PY="${PRISM_PYTHON:-python}"
 export PYTHONPATH="$HERE/code${PYTHONPATH:+:$PYTHONPATH}"
+"$PY" -m prism.join_weights   # first run only: rejoin weights/*.partNNN (GitHub 100 MB file limit), MD5-checked
 exec "$PY" -m prism.pipeline "$1" "$2"
