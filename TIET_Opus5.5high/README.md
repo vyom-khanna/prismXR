@@ -20,6 +20,123 @@ follows the TEAM_README schema. Every output is checked by our own validator bef
 
 ## 1. Architecture
 
+Blue = pretrained models, orange = models we trained on EPIC-100 train, yellow = routing decision.
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"background": "#0d1117", "primaryColor": "#161b22", "primaryTextColor": "#e6edf3", "primaryBorderColor": "#8b949e", "lineColor": "#8b949e", "clusterBkg": "#0d1117", "clusterBorder": "#30363d", "titleColor": "#e6edf3", "edgeLabelBackground": "#30363d", "fontSize": "15px", "fontFamily": "Arial, Helvetica, sans-serif"}, "flowchart": {"wrappingWidth": 360, "curve": "basis", "nodeSpacing": 30, "rankSpacing": 40}}}%%
+flowchart TB
+    IN[/"Input video (.mp4)"/]:::io
+
+    subgraph ROUTER["1 · Router: what kind of video is this?"]
+        direction TB
+        PROBE["ffprobe<br/>duration"]:::step
+        FR32["32 evenly spaced frames<br/>(fast seeks)"]:::step
+        CLIP["CLIP ViT-L/14 (DataComp-XL)<br/>zero-shot, prompt ensembles<br/>15 classes"]:::model
+        LABEL{"label + score<br/>route by content<br/>(never by file name)"}:::decision
+        FR32 --> CLIP --> LABEL
+    end
+
+    IN --> PROBE
+    IN --> FR32
+
+    subgraph EPIC["2a · Action branch: cooking videos (EPIC-KITCHENS)"]
+        direction TB
+
+        subgraph PERCEIVE["Find actions"]
+            direction TB
+            DEC["Decode 30 fps<br/>short side 256"]:::step
+            SF["SlowFast-R50<br/>EPIC-100 train<br/>32-frame clips, stride 16<br/>2304-d features + clip verb/noun probs"]:::model
+            AFV["ActionFormer: verb detector<br/>97 verbs"]:::model
+            AFN["ActionFormer: noun detector<br/>300 nouns"]:::model
+            DEC --> SF
+            SF --> AFV
+            SF --> AFN
+        end
+
+        subgraph RECHECK["Re-check every verb segment"]
+            direction TB
+            SEG["Segment classifier (ours)<br/>mean / max / ±2 s context pooling<br/>verb · noun · 1931-way pair heads"]:::ours
+            NMS["Top-300 distinct verb segments<br/>(NMS)"]:::step
+            LAV["LaViLa TimeSformer-L<br/>16 frames per segment<br/>verb + noun heads only"]:::model
+            NMS --> LAV
+        end
+
+        subgraph PAIR["Pair verbs with nouns"]
+            direction TB
+            EVID["Noun evidence per verb segment<br/>0.3 · overlapping noun detections<br/>+ 0.4 · segment-classifier noun<br/>+ 0.3 · pair head (noun given verb)<br/>LaViLa noun replaces the classifier term where it overlaps"]:::step
+            TOP8["Top-8 pairs per segment<br/>score = verb × noun^0.75"]:::step
+            ALT["+ LaViLa alternative pairs<br/>top-3 × top-3 verbs × nouns, weight 0.25<br/>(top-5 × top-5 for output actions)"]:::step
+            MERGE["Merge duplicates<br/>same pair, tIoU ≥ 0.8, noisy-or<br/>(12 000 candidates before the cap)"]:::step
+            EVID --> TOP8 --> MERGE
+            ALT --> MERGE
+        end
+
+        subgraph OUTACT["Output actions"]
+            direction TB
+            CTX["Temporal noun-context rescoring<br/>score × (0.1 + ctx)^0.15<br/>co-occurrence matrix from EPIC train, decay exp(−Δt / 10 s)"]:::ours
+            CAP["Cap-aware ranking<br/>score / rank^0.35 within each pair<br/>keep top 2000"]:::step
+            CTX --> CAP
+        end
+
+        subgraph SELECT["Choose highlights (≤ 15 % budget)"]
+            direction TB
+            SELACT["Selection actions<br/>(built from the top-200 LaViLa segments)"]:::step
+            DENS["Action-density model (ours)<br/>expected actions per 0.53 s step"]:::ours
+            GREEDY["Greedy budgeted max-coverage<br/>windows of 4–5 s that add the most<br/>new distinct verb–noun pairs + density bonus"]:::step
+            LS["Local search<br/>move · resize · swap windows (4–6 s)<br/>while the objective rises"]:::step
+            WIDEN["Widen windows with leftover budget<br/>fill to 14.9 %"]:::step
+            SELACT --> GREEDY
+            DENS --> GREEDY
+            GREEDY --> LS --> WIDEN
+        end
+
+        AFV --> SEG
+        AFV --> NMS
+        SF --> SEG
+        SF --> DENS
+        AFN --> EVID
+        SEG --> EVID
+        LAV --> EVID
+        LAV --> ALT
+        MERGE --> CTX
+        MERGE --> SELACT
+    end
+
+    subgraph SPORT["2b · Highlight branch: sports videos (FPVSum)"]
+        direction TB
+        F2["Frames at 2 fps"]:::step
+        FEAT["Per-frame signals<br/>motion (multi-scale frame difference)<br/>CLIP scene change · CLIP exciting-vs-boring prompt<br/>contrast · brightness · temporal-centre prior · local uniqueness"]:::step
+        RIDGE["Importance = ridge mix<br/>(11 weights)"]:::step
+        PEAKS["Greedy non-overlapping 4 s peak windows<br/>then widen to 14.9 %"]:::step
+        F2 --> FEAT --> RIDGE --> PEAKS
+    end
+
+    LABEL -- "cooking" --> DEC
+    LABEL -- "sports" --> F2
+
+    subgraph FINAL["3 · Finalize"]
+        direction TB
+        FIN["Sorted, non-overlapping windows<br/>each ≥ 4.02 s, total ≤ 15 % of the duration<br/>+ label from the router"]:::step
+        VAL["Schema validator"]:::step
+        FIN --> VAL
+    end
+
+    CAP --> FIN
+    WIDEN --> FIN
+    PEAKS --> FIN
+
+    OUT[/"out.json<br/>team_id · video_id · duration_sec<br/>label · actions (verb, noun, segment, score) · highlights"/]:::io
+    VAL --> OUT
+
+    classDef io fill:#0b3d2e,stroke:#3fb950,color:#e6edf3,stroke-width:2px
+    classDef step fill:#161b22,stroke:#8b949e,color:#e6edf3
+    classDef model fill:#1f2a44,stroke:#4c9aff,color:#e6edf3,stroke-width:2px
+    classDef ours fill:#3a2410,stroke:#ff8b3d,color:#e6edf3,stroke-width:2px
+    classDef decision fill:#3b3110,stroke:#e3b341,color:#e6edf3,stroke-width:2px
+```
+
+Text version with all settings:
+
 ```
 video.mp4
   │ ffprobe → duration
