@@ -34,6 +34,7 @@ to the highlight branch. Blue = pretrained models (trained by their authors on E
 orange = models we trained on EPIC-100 train, yellow = routing decision.
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"background": "#0d1117", "primaryColor": "#161b22", "primaryTextColor": "#e6edf3", "primaryBorderColor": "#8b949e", "lineColor": "#8b949e", "clusterBkg": "#0d1117", "clusterBorder": "#30363d", "titleColor": "#e6edf3", "edgeLabelBackground": "#30363d", "fontSize": "15px", "fontFamily": "Arial, Helvetica, sans-serif"}, "flowchart": {"wrappingWidth": 360, "curve": "basis", "nodeSpacing": 30, "rankSpacing": 40}}}%%
 flowchart TB
     IN[/"Input video (.mp4)"/]:::io
 
@@ -126,7 +127,7 @@ flowchart TB
 
     subgraph FINAL["3 · Finalize"]
         direction TB
-        FIN["Sorted, non-overlapping windows<br/>each ≥ 4.02 s, total ≤ 15 %"]:::step
+        FIN["Sorted, non-overlapping windows<br/>each ≥ 4.02 s, total ≤ 15 % of the duration<br/>+ label from the router"]:::step
         VAL["Schema validator"]:::step
         FIN --> VAL
     end
@@ -134,8 +135,6 @@ flowchart TB
     CAP --> FIN
     WIDEN --> FIN
     PEAKS --> FIN
-    PROBE --> FIN
-    LABEL --> FIN
 
     OUT[/"out.json<br/>team_id · video_id · duration_sec<br/>label · actions (verb, noun, segment, score) · highlights"/]:::io
     VAL --> OUT
