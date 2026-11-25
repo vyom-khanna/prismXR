@@ -27,6 +27,14 @@ where the system can be used.
 Local score on all 187 manifest videos (our re-implementation of the metrics): **weighted total 40.3**
 (pair mAP 23.0 · coverage 42.1 · highlight F1 31.6 · label accuracy 98.0).
 
+## How we got to v10
+
+![Weighted total from v1 (35.2) to v10 (40.3)](demo/version_history.png)
+
+Ten measured versions, from a plain detector pipeline (v1, 35.2) to the final system (v10, 40.3). A change was kept only
+if it improved both halves of a cross-validation split by participant; the full log, including rejected ideas, is in
+[`PROGRESS.md`](PROGRESS.md).
+
 | Folder | Contents |
 |---|---|
 | `TIET_Opus5.5high/` | the submission: inference code, all model weights (large ones as <100 MB parts, rejoined by run.sh), 187 output JSONs |
