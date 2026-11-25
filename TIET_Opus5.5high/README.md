@@ -14,7 +14,7 @@ One command per video:
 The output is one JSON (`team_id`, `video_id`, `duration_sec`, `label`, `actions`, `highlights`) that
 follows the TEAM_README schema. Every output is checked by our own validator before it is written.
 
-**Demo video:** https://drive.google.com/drive/folders/1gG_aLcU4Mp3Nq-dPiHhkLjqznKbv4hbD?usp=drive_link
+**Video (5 min, architecture and results):** [`demo/TIET_Opus5.5high_video.mp4`](../demo/TIET_Opus5.5high_video.mp4) · **Demo video (Google Drive):** https://drive.google.com/drive/folders/1gG_aLcU4Mp3Nq-dPiHhkLjqznKbv4hbD?usp=drive_link
 
 ---
 

@@ -15,3 +15,6 @@ TIET_Opus5.5high/weights/actionformer/epic_slowfast_noun_ema.pth.tar
 TIET_Opus5.5high/weights/actionformer/epic_slowfast_verb_ema.pth.tar
 TIET_Opus5.5high/weights/clip/open_clip_fp16.bin
 TIET_Opus5.5high/weights/lavila/tsf_l_ek100_vn_fp16.pth
+
+# demo video (only this folder)
+!demo/*.mp4

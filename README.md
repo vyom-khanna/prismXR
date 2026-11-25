@@ -14,7 +14,15 @@ pip install -r requirements.txt
 ./run.sh <video.mp4> <out.json>
 ```
 
-**Demo video:** https://drive.google.com/drive/folders/1gG_aLcU4Mp3Nq-dPiHhkLjqznKbv4hbD?usp=drive_link
+## Video (5 min): architecture, how it works, results
+
+[![Watch the video](demo/thumbnail.png)](demo/TIET_Opus5.5high_video.mp4)
+
+**[▶ Watch the video (demo/TIET_Opus5.5high_video.mp4, 5 min, 1080p)](demo/TIET_Opus5.5high_video.mp4)**:
+the final v10 architecture, how each stage works, real outputs, a brief history from v1 to v10, results, and
+where the system can be used.
+
+**Demo video (Google Drive):** https://drive.google.com/drive/folders/1gG_aLcU4Mp3Nq-dPiHhkLjqznKbv4hbD?usp=drive_link
 
 Local score on all 187 manifest videos (our re-implementation of the metrics): **weighted total 40.3**
 (pair mAP 23.0 · coverage 42.1 · highlight F1 31.6 · label accuracy 98.0).
@@ -24,6 +32,7 @@ Local score on all 187 manifest videos (our re-implementation of the metrics): *
 | `TIET_Opus5.5high/` | the submission: inference code, all model weights (large ones as <100 MB parts, rejoined by run.sh), 187 output JSONs |
 | `tools/` | development only: training scripts for our models, evaluation, tuning and integrity checks (never imported at inference) |
 | `research/` | literature review behind the design choices |
+| `demo/` | the 5-minute video (architecture, how it works, results) and its thumbnail |
 | `AI_DISCLOSURE.md` | how AI assistance (Claude Code) was used, and the AI models inside the system |
 | `PROGRESS.md` | experiment log (every change, kept or rejected, with its cross-validation result) |
 | `TIET_Opus5.5high_Submission.pptx` | presentation deck |
