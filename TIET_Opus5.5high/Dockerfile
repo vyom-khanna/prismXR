@@ -7,6 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY run.sh ./
 COPY code ./code
 COPY weights ./weights
+# rejoin the <100 MB weight parts once at build time (MD5-checked), not on every container start
+RUN PYTHONPATH=/app/code python -m prism.join_weights
 RUN chmod +x run.sh
 # usage: docker run --gpus all -v /data:/data prism /data/video.mp4 /data/out.json
 ENTRYPOINT ["./run.sh"]

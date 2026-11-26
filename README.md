@@ -9,9 +9,9 @@ setup, data used, results and the integrity disclosure.
 ```bash
 git clone https://github.com/vyom-khanna/prismXR.git
 cd prismXR/TIET_Opus5.5high
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cu128
 pip install -r requirements.txt
-./run.sh <video.mp4> <out.json>
+./run.sh <video.mp4> <out.json>      # or: bash run.sh <video.mp4> <out.json>
 ```
 
 ## Video (5 min): architecture, how it works, results

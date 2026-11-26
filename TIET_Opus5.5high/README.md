@@ -204,9 +204,9 @@ Python (`actionformer/utils/nms.py`), so nothing needs compiling.
 
 ```bash
 # Python 3.11–3.13, NVIDIA GPU recommended (CPU works, much slower); ffmpeg + ffprobe on PATH
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cu128
 pip install -r requirements.txt
-./run.sh sample.mp4 out.json
+./run.sh sample.mp4 out.json      # or: bash run.sh sample.mp4 out.json
 ```
 
 Docker: `docker build -t prism . && docker run --gpus all -v /data:/data prism /data/v.mp4 /data/out.json`
